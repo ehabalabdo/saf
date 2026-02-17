@@ -238,11 +238,13 @@ const PatientProfileView: React.FC = () => {
            <div className="flex-1 text-center md:text-start">
                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
                    <h1 className="text-3xl font-bold text-slate-800">{patient.name}</h1>
+                   {patient.currentVisit?.visitId && (
                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase w-fit mx-auto md:mx-0 ${
                        patient.currentVisit.status === 'in-progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
                    }`}>
                        {patient.currentVisit.status}
                    </span>
+                   )}
                </div>
                
                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-slate-500">
@@ -424,8 +426,8 @@ const PatientProfileView: React.FC = () => {
            {/* TAB 2: TIMELINE */}
            {activeTab === 'timeline' && (
                <div className="animate-fade-in relative pl-8 border-l-2 border-slate-100 space-y-8 py-2">
-                   {/* Combined History + Current */}
-                   {[patient.currentVisit, ...patient.history].map((visit, idx) => (
+                   {/* Combined History + Current (skip empty/reset currentVisit) */}
+                   {[...(patient.currentVisit?.visitId ? [patient.currentVisit] : []), ...patient.history].map((visit, idx) => (
                        <div key={idx} className="relative">
                            <div className={`absolute -left-[41px] top-0 w-5 h-5 rounded-full border-4 border-white shadow-sm ${idx === 0 ? 'bg-primary' : 'bg-slate-300'}`}></div>
                            <div className="flex flex-col md:flex-row justify-between items-start gap-4">

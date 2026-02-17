@@ -147,14 +147,23 @@ const PatientsRegistryView: React.FC = () => {
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                              <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                             {getClinicName(p.currentVisit.clinicId)}
+                             {p.currentVisit?.visitId ? getClinicName(p.currentVisit.clinicId) : (p.history?.length > 0 ? getClinicName(p.history[p.history.length - 1].clinicId) : '—')}
                           </div>
                        </td>
                        <td className="px-6 py-4">
-                          <StatusBadge status={p.currentVisit.status} />
+                          {p.currentVisit?.visitId ? (
+                            <StatusBadge status={p.currentVisit.status} />
+                          ) : (
+                            <span className="px-2 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-400">لا زيارة</span>
+                          )}
                        </td>
                        <td className="px-6 py-4 text-xs text-slate-500">
-                          {new Date(p.currentVisit.date).toLocaleDateString()}
+                          {p.currentVisit?.visitId && p.currentVisit.date > 0 
+                            ? new Date(p.currentVisit.date).toLocaleDateString()
+                            : p.history?.length > 0
+                              ? new Date(p.history[p.history.length - 1].date).toLocaleDateString()
+                              : '—'
+                          }
                        </td>
                        <td className="px-6 py-4 text-end">
                           <button className="text-slate-400 hover:text-primary p-2">
