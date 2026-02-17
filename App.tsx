@@ -93,7 +93,7 @@ const ExpiredBlockScreen: React.FC = () => {
           <p className="text-slate-400 text-xs mb-1">للتواصل مع الإدارة</p>
           <p className="text-white font-bold text-lg">0790904030</p>
         </div>
-        <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+        <button onClick={() => { const s = localStorage.getItem('currentClientSlug'); localStorage.removeItem('token'); localStorage.removeItem('user'); localStorage.removeItem('patientUser'); window.location.href = s ? `/${s}/login` : '/login'; }}
           className="text-slate-500 hover:text-white text-sm transition">
           <i className="fa-solid fa-arrow-right-from-bracket ml-1"></i> تسجيل خروج
         </button>
@@ -158,6 +158,8 @@ const SlugRedirect: React.FC<{ path: string }> = ({ path }) => {
   if (slug) {
     return <RedirectHandler to={`/${slug}${path}`} />;
   }
+  // No slug saved — show login page directly (no redirect loop)
+  if (path === '/login') return <LoginView />;
   return <RedirectHandler to="/login" />;
 };
 
@@ -170,8 +172,8 @@ const AppRoutes: React.FC = () => {
       {/* Super Admin - YOUR control panel */}
       <Route path="/super-admin" element={<SuperAdminView />} />
 
-      {/* Staff Login */}
-      <Route path="/login" element={user ? <RedirectHandler to={getHomeRoute(user)} /> : <LoginView />} />
+      {/* Staff Login — redirect to slug login if slug saved */}
+      <Route path="/login" element={user ? <RedirectHandler to={getHomeRoute(user)} /> : <SlugRedirect path="/login" />} />
 
       {/* Patient Portal Routes */}
       <Route 
@@ -202,7 +204,7 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/" 
         element={
-          user ? <RedirectHandler to={getHomeRoute(user)} /> : <RedirectHandler to="/login" />
+          user ? <RedirectHandler to={getHomeRoute(user)} /> : <SlugRedirect path="/login" />
         } 
       />
 
