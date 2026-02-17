@@ -129,6 +129,11 @@ export const useClient = () => {
   return context;
 };
 
+// Safe version that returns null instead of throwing when outside ClientProvider
+export const useClientSafe = () => {
+  return useContext(ClientContext) || null;
+};
+
 // Helper to get current client_id from anywhere
 export function getCurrentClientId(): number | null {
   const saved = localStorage.getItem('currentClientId');
