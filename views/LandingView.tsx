@@ -206,7 +206,7 @@ const LandingView: React.FC = () => {
             <div className="inline-block px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-primary text-sm font-bold mb-4">
               لماذا نحن
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">لماذا <span className="text-primary">MED LOOP</span>؟</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" dir="rtl">لماذا <span className="text-primary">MED LOOP</span>&rlm;؟</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
