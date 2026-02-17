@@ -104,6 +104,13 @@ const ExpiredBlockScreen: React.FC = () => {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
+  // Detect slug from current URL for proper redirect
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const knownTopRoutes = ['login', 'admin', 'reception', 'doctor', 'patients', 'appointments', 
+    'dental-lab', 'implant-company', 'academy', 'clinic-history', 'device-results', 'device-management', 
+    'queue-display', 'patient', 'super-admin'];
+  const currentSlug = pathParts[0] && !knownTopRoutes.includes(pathParts[0]) ? pathParts[0] : null;
+  const loginPath = currentSlug ? `/${currentSlug}/login` : '/login';
 
   if (loading) {
     return (
@@ -114,19 +121,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   }
 
   if (!user) {
-    return <RedirectHandler to="/login" />;
+    return <RedirectHandler to={loginPath} />;
   }
 
   if (!allowedRoles.includes(user.role)) {
-    // Basic Role Redirects based on Strict Roles
-    if (user.role === UserRole.ADMIN) return <RedirectHandler to="/admin" />;
-    if (user.role === UserRole.SECRETARY) return <RedirectHandler to="/reception" />;
-    if (user.role === UserRole.DOCTOR) return <RedirectHandler to="/doctor" />;
-    if (user.role === UserRole.LAB_TECH) return <RedirectHandler to="/dental-lab" />;
-    if (user.role === UserRole.IMPLANT_MANAGER) return <RedirectHandler to="/implant-company" />;
-    if (user.role === UserRole.COURSE_MANAGER) return <RedirectHandler to="/academy" />;
+    const prefix = currentSlug ? `/${currentSlug}` : '';
+    if (user.role === UserRole.ADMIN) return <RedirectHandler to={`${prefix}/admin`} />;
+    if (user.role === UserRole.SECRETARY) return <RedirectHandler to={`${prefix}/reception`} />;
+    if (user.role === UserRole.DOCTOR) return <RedirectHandler to={`${prefix}/doctor`} />;
+    if (user.role === UserRole.LAB_TECH) return <RedirectHandler to={`${prefix}/dental-lab`} />;
+    if (user.role === UserRole.IMPLANT_MANAGER) return <RedirectHandler to={`${prefix}/implant-company`} />;
+    if (user.role === UserRole.COURSE_MANAGER) return <RedirectHandler to={`${prefix}/academy`} />;
     
-    return <RedirectHandler to="/login" />;
+    return <RedirectHandler to={loginPath} />;
   }
 
   return <>{children}</>;
