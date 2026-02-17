@@ -93,7 +93,7 @@ const SuperAdminView: React.FC = () => {
         password: newClient.ownerPassword
       });
       
-      alert(`✅ تم إنشاء المركز بنجاح!\n\nالرابط: ${window.location.origin}/#/${newClient.slug}/login\nاسم المستخدم: ${newClient.ownerEmail}\nكلمة المرور: ${newClient.ownerPassword}`);
+      alert(`تم إنشاء المركز بنجاح!\n\nالرابط: ${window.location.origin}/${newClient.slug}/login\nاسم المستخدم: ${newClient.ownerEmail}\nكلمة المرور: ${newClient.ownerPassword}`);
       setNewClient({ name: '', slug: '', phone: '', email: '', address: '', ownerName: '', ownerEmail: '', ownerPassword: '', trialDays: 30 });
       setShowAddClient(false);
       await fetchClients();
@@ -354,7 +354,7 @@ const SuperAdminView: React.FC = () => {
                       )}
                       <button
                         onClick={() => {
-                          const url = `${window.location.origin}/#/${client.slug}/login`;
+                          const url = `${window.location.origin}/${client.slug}/login`;
                           navigator.clipboard.writeText(url);
                           alert(`تم نسخ الرابط:\n${url}`);
                         }}

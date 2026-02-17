@@ -366,7 +366,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
   };
 
   const openQueueWindow = () => {
-      try { const fullUrl = window.location.href.split('#')[0] + '#/queue-display'; window.open(fullUrl, 'MedCoreQueue', 'width=1000,height=800'); } catch (e) { alert("Cannot open window."); }
+      try { const fullUrl = window.location.origin + '/queue-display'; window.open(fullUrl, 'MedCoreQueue', 'width=1000,height=800'); } catch (e) { alert("Cannot open window."); }
   };
 
   // السكرتيرة تشوف فقط المرضى المنتظرين (لم يبدأ الدكتور معهم بعد)

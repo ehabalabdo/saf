@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { HashRouter, MemoryRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ClientProvider, useClient } from './context/ClientContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -51,7 +51,7 @@ const SafeRouter: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return useMemory ? (
     <MemoryRouter>{children}</MemoryRouter>
   ) : (
-    <HashRouter>{children}</HashRouter>
+    <BrowserRouter>{children}</BrowserRouter>
   );
 };
 
@@ -375,7 +375,7 @@ const ClientGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <i className="fa-solid fa-building-circle-xmark text-5xl text-red-400 mb-4"></i>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">المركز غير موجود</h2>
           <p className="text-slate-500 mb-4">{error || 'تأكد من صحة الرابط'}</p>
-          <a href="/#/super-admin" className="text-primary hover:underline text-sm">الذهاب للوحة التحكم</a>
+          <a href="/super-admin" className="text-primary hover:underline text-sm">الذهاب للوحة التحكم</a>
         </div>
       </div>
     );

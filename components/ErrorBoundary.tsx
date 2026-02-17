@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
   handleFullReset = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('patientUser');
-    window.location.hash = '#/login';
+    window.location.href = '/login';
     window.location.reload();
   };
 

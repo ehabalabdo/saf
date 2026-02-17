@@ -14,21 +14,11 @@ interface ClientContextType {
 const ClientContext = createContext<ClientContextType | undefined>(undefined);
 
 // Extract slug from URL: med.loopjo.com/alshifa → "alshifa"
-// Or from hash: /#/alshifa/login → "alshifa"
 function getSlugFromURL(): string | null {
-  // Check hash route first: /#/alshifa/login
-  const hash = window.location.hash;
-  if (hash) {
-    const parts = hash.replace('#/', '').split('/');
-    if (parts[0] && parts[0] !== 'super-admin' && parts[0] !== 'login') {
-      return parts[0];
-    }
-  }
-  
-  // Check path: /alshifa
+  // Check pathname: /alshifa/login → "alshifa"
   const path = window.location.pathname;
   const parts = path.split('/').filter(Boolean);
-  if (parts[0] && parts[0] !== 'super-admin') {
+  if (parts[0] && parts[0] !== 'super-admin' && parts[0] !== 'login') {
     return parts[0];
   }
   
