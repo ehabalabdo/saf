@@ -172,7 +172,19 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
     // WhatsApp Integration - Send login credentials via WhatsApp
     const sendWhatsAppCredentials = (phone: string, name: string, password: string) => {
         // Clean phone number (remove spaces, dashes, etc.)
-        const cleanPhone = phone.replace(/[^0-9+]/g, '');
+        let cleanPhone = phone.replace(/[^0-9+]/g, '');
+        
+        // Convert local Jordan numbers to international format
+        // Remove leading + if present
+        cleanPhone = cleanPhone.replace(/^\+/, '');
+        // Convert 07x to 9627x (Jordan mobile)
+        if (cleanPhone.startsWith('07')) {
+            cleanPhone = '962' + cleanPhone.substring(1);
+        }
+        // Convert 06x to 9626x (Jordan landline)  
+        if (cleanPhone.startsWith('06')) {
+            cleanPhone = '962' + cleanPhone.substring(1);
+        }
         
         // Prepare message in Arabic
         const message = `مرحباً ${name} 👋
@@ -191,7 +203,7 @@ https://med.loopjo.com
 ✅ يمكنك تسجيل الدخول ومتابعة حجوزاتك ونتائج الفحوصات`;
         
         const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
         
         // Open WhatsApp in new tab
         window.open(whatsappUrl, '_blank');
