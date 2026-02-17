@@ -237,13 +237,6 @@ const QueueDisplayView: React.FC = () => {
         </div>
       </main>
 
-      {/* Ticker / Footer */}
-      <footer className="bg-primary text-white p-3 overflow-hidden whitespace-nowrap">
-         <div className="animate-marquee inline-block font-semibold">
-            Please have your ID ready • يرجى تجهيز الهوية الشخصية • Emergency cases are prioritized • الحالات الطارئة لها الأولوية
-         </div>
-      </footer>
-
       <style>{`
         @keyframes marquee {
             0% { transform: translateX(100%); }
