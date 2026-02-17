@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import DevModeSwitcher from '../components/DevModeSwitcher';
 import { useClientSafe } from '../context/ClientContext';
 
 const LoginView: React.FC = () => {
@@ -148,7 +147,6 @@ const LoginView: React.FC = () => {
         </div>
         <div className="mt-6 text-xs text-slate-400 text-center">© 2026 Medloop</div>
       </div>
-      <DevModeSwitcher />
     </div>
   );
 };
