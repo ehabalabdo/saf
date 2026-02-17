@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { ClinicService, PatientService, AppointmentService, NotificationService, BillingService, SettingsService, CourseService } from '../services/services';
 import { api } from '../src/api';
 import { useAuth } from '../context/AuthContext';
+import { useClient } from '../context/ClientContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Clinic, Patient, Gender, Priority, Appointment, Notification, Invoice } from '../types';
 import { jsPDF } from "jspdf";
@@ -13,6 +14,7 @@ interface ReceptionViewProps {
 }
 
 const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
+    const { client } = useClient();
     const { user: authUser } = useAuth();
     const user = propUser || authUser;
     const { t, language } = useLanguage();
@@ -186,21 +188,26 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
             cleanPhone = '962' + cleanPhone.substring(1);
         }
         
+        // Build client-specific login URL
+        const clientSlug = client?.slug || localStorage.getItem('currentClientSlug') || '';
+        const loginUrl = clientSlug ? `https://med.loopjo.com/${clientSlug}` : 'https://med.loopjo.com';
+        const clinicName = client?.name || 'العيادة';
+        
         // Prepare message in Arabic
-        const message = `مرحباً ${name} 👋
-
-تم تسجيلك بنجاح في نظام *MED LOOP* الطبي
-
-🔐 *بيانات الدخول للبوابة الإلكترونية:*
-📱 اسم المستخدم (رقم الهاتف): ${phone}
-🔑 كلمة المرور: ${password}
-
-🌐 *رابط الدخول:*
-https://med.loopjo.com
-
-💡 استخدم رقم هاتفك كاسم مستخدم
-⚠️ احتفظ بهذه المعلومات بشكل آمن
-✅ يمكنك تسجيل الدخول ومتابعة حجوزاتك ونتائج الفحوصات`;
+        const message = [
+          `مرحبا ${name}`,
+          '',
+          `تم تسجيلك في نظام ${clinicName}`,
+          '',
+          'بيانات الدخول:',
+          `اسم المستخدم: ${phone}`,
+          `كلمة المرور: ${password}`,
+          '',
+          'رابط الدخول:',
+          loginUrl,
+          '',
+          'احتفظ بهذه المعلومات بشكل آمن'
+        ].join('\n');
         
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
