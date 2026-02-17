@@ -16,7 +16,7 @@ const QueueDisplayView: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [clinics, setClinics] = useState<Record<string, string>>({});
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [currentCalling, setCurrentCalling] = useState<{name: string, clinic: string, patientId?: string} | null>(null);
   
   // Track previous patients to detect changes for TTS
@@ -116,31 +116,31 @@ const QueueDisplayView: React.FC = () => {
   }, [user, clinics, soundEnabled, language]); // Added all dependencies
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col font-sans">
       
       {/* Header */}
-      <header className="bg-slate-800 p-6 flex justify-between items-center border-b border-slate-700 shadow-lg relative">
+      <header className="bg-slate-900/80 backdrop-blur-md px-8 py-5 flex justify-between items-center border-b border-primary/20 shadow-lg shadow-primary/5">
         <div className="flex items-center gap-4">
-           <img src="/logo.png" alt="MED LOOP" className="w-16 h-16 object-contain" />
+           <img src="/logo.png" alt="MED LOOP" className="w-14 h-14 object-contain" />
            <div>
-             <h1 className="text-3xl font-bold tracking-wide">{t('system_name')}</h1>
-             <p className="text-slate-400 text-lg">{t('queue_display_title')}</p>
+             <h1 className="text-2xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">{t('system_name')}</h1>
+             <p className="text-primary/70 text-sm font-medium">{t('queue_display_title')}</p>
            </div>
         </div>
         
         <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`absolute top-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold transition-colors ${soundEnabled ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-500 hover:text-white'}`}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${soundEnabled ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-slate-800 text-slate-500 border border-slate-700 hover:text-white'}`}
         >
             <i className={`fa-solid ${soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark'} mr-2`}></i>
-            {soundEnabled ? 'Audio ON' : 'Click to Enable Audio'}
+            {soundEnabled ? 'Audio ON' : 'Audio OFF'}
         </button>
 
         <div className="text-right">
-           <div className="text-4xl font-mono font-bold text-primary">
+           <div className="text-3xl font-mono font-bold text-primary">
              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
            </div>
-           <div className="text-slate-400 text-sm uppercase tracking-widest mt-1">
+           <div className="text-slate-500 text-xs uppercase tracking-widest mt-1">
              {currentTime.toLocaleDateString()}
            </div>
         </div>
@@ -149,7 +149,7 @@ const QueueDisplayView: React.FC = () => {
       {/* Calling Popup */}
       {currentCalling && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-3xl p-12 shadow-2xl border-4 border-green-400 max-w-3xl w-full mx-8 animate-bounce-subtle">
+          <div className="bg-gradient-to-br from-primary to-secondary rounded-3xl p-12 shadow-2xl border-2 border-primary/40 max-w-3xl w-full mx-8 animate-bounce-subtle">
             <div className="text-center space-y-6">
               <div className="text-8xl mb-4">
                 <i className="fa-solid fa-bell animate-ring text-white"></i>
@@ -157,11 +157,11 @@ const QueueDisplayView: React.FC = () => {
               <h2 className="text-5xl font-bold text-white">
                 {language === 'ar' ? 'حان دورك!' : 'Your Turn!'}
               </h2>
-              <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="bg-white/15 rounded-2xl p-6 backdrop-blur-sm">
                 <p className="text-3xl font-semibold text-white mb-2">
                   {language === 'ar' ? 'المريض:' : 'Patient:'} <span className="font-bold">{currentCalling.name}</span>
                 </p>
-                <p className="text-2xl text-green-100">
+                <p className="text-2xl text-white/80">
                   {language === 'ar' ? 'يرجى التوجه إلى:' : 'Please proceed to:'}
                 </p>
                 <p className="text-4xl font-bold text-white mt-2">
@@ -169,7 +169,7 @@ const QueueDisplayView: React.FC = () => {
                   {currentCalling.clinic}
                 </p>
               </div>
-              <div className="flex items-center justify-center gap-3 text-green-200 text-xl">
+              <div className="flex items-center justify-center gap-3 text-white/70 text-xl">
                 <i className="fa-solid fa-arrow-right animate-pulse"></i>
                 <span>{language === 'ar' ? 'توجه الآن للعيادة' : 'Proceed to the clinic now'}</span>
                 <i className="fa-solid fa-arrow-left animate-pulse"></i>
@@ -181,10 +181,10 @@ const QueueDisplayView: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-hidden flex flex-col">
-        <div className="flex-1 bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl backdrop-blur-sm">
+        <div className="flex-1 bg-slate-800/30 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl backdrop-blur-sm">
            
            {/* Table Header */}
-           <div className="grid grid-cols-4 bg-slate-700 text-slate-300 p-5 text-xl font-bold uppercase tracking-wider">
+           <div className="grid grid-cols-4 bg-gradient-to-r from-primary/20 to-secondary/10 text-primary p-5 text-lg font-bold uppercase tracking-wider border-b border-primary/10">
               <div>{t('patient_col')}</div>
               <div>{t('clinic_col')}</div>
               <div className="text-center">{t('status_col')}</div>
@@ -192,41 +192,37 @@ const QueueDisplayView: React.FC = () => {
            </div>
 
            {/* Table Body */}
-           <div className="divide-y divide-slate-700/50 overflow-y-auto h-full">
+           <div className="divide-y divide-slate-700/30 overflow-y-auto h-full">
               {patients.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
-                    <i className="fa-regular fa-clock text-6xl opacity-50"></i>
+                <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-4">
+                    <i className="fa-regular fa-clock text-6xl opacity-40"></i>
                     <p className="text-2xl">{t('no_active_patients')}</p>
                 </div>
               ) : patients.map((p, idx) => (
-                <div key={p.id} className={`grid grid-cols-4 p-6 items-center text-xl transition-all animate-fade-in ${idx % 2 === 0 ? 'bg-slate-800/30' : 'bg-transparent'}`}>
+                <div key={p.id} className={`grid grid-cols-4 p-6 items-center text-xl transition-all animate-fade-in ${idx % 2 === 0 ? 'bg-slate-800/20' : 'bg-transparent'} hover:bg-primary/5`}>
                    
-                   {/* Patient Name (Masked for privacy if needed, but usually full name in clinics) */}
                    <div className="font-bold text-2xl flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-sm font-mono text-slate-400">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-mono text-primary">
                         {idx + 1}
                       </div>
                       {p.name}
                    </div>
 
-                   {/* Clinic */}
                    <div className="text-slate-300">
-                      <i className="fa-solid fa-hospital-user mr-2 text-slate-500"></i>
+                      <i className="fa-solid fa-hospital-user mr-2 text-primary/50"></i>
                       {clinics[p.currentVisit.clinicId] || '...'}
                    </div>
 
-                   {/* Status Badge */}
                    <div className="text-center">
                       <span className={`inline-block px-6 py-2 rounded-full font-bold shadow-lg ${
                          p.currentVisit.status === 'in-progress' 
-                         ? 'bg-green-600 text-white animate-pulse' 
-                         : 'bg-amber-600 text-white'
+                         ? 'bg-primary text-white animate-pulse shadow-primary/30' 
+                         : 'bg-amber-500/90 text-white shadow-amber-500/20'
                       }`}>
                          {p.currentVisit.status === 'in-progress' ? t('queue_status_in') : t('queue_status_wait')}
                       </span>
                    </div>
 
-                   {/* Time */}
                    <div className="text-end font-mono text-slate-400">
                       {new Date(p.currentVisit.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                    </div>
@@ -238,13 +234,6 @@ const QueueDisplayView: React.FC = () => {
       </main>
 
       <style>{`
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-marquee {
-            animation: marquee 20s linear infinite;
-        }
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out;
         }
