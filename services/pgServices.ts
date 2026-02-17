@@ -76,11 +76,12 @@ export const pgClientsService = {
     };
   },
 
-  create: async (data: { name: string; slug: string; phone?: string; email?: string; address?: string }): Promise<number> => {
+  create: async (data: { name: string; slug: string; phone?: string; email?: string; address?: string; trialDays?: number }): Promise<number> => {
+    const trialDays = data.trialDays || 30;
     const result = await sql`
       INSERT INTO clients (name, slug, phone, email, address, status, trial_ends_at, created_at, updated_at, is_active)
       VALUES (${data.name}, ${data.slug}, ${data.phone || ''}, ${data.email || ''}, ${data.address || ''}, 
-              'trial', NOW() + INTERVAL '30 days', NOW(), NOW(), true)
+              'trial', NOW() + ${trialDays + ' days'}::interval, NOW(), NOW(), true)
       RETURNING id
     `;
     return result[0].id as number;
@@ -120,6 +121,21 @@ export const pgClientsService = {
   // Reactivate
   activate: async (clientId: number): Promise<void> => {
     await sql`UPDATE clients SET status = 'active', updated_at = NOW() WHERE id = ${clientId}`;
+  },
+
+  // Delete a client and all related data
+  delete: async (clientId: number): Promise<void> => {
+    // Delete in dependency order
+    await sql`DELETE FROM appointments WHERE client_id = ${clientId}`;
+    await sql`DELETE FROM patients WHERE client_id = ${clientId}`;
+    await sql`DELETE FROM users WHERE client_id = ${clientId}`;
+    await sql`DELETE FROM clinics WHERE client_id = ${clientId}`;
+    // Try device tables (may not exist)
+    try { await sql`DELETE FROM device_results WHERE client_id = ${clientId}`; } catch {}
+    try { await sql`DELETE FROM device_api_keys WHERE client_id = ${clientId}`; } catch {}
+    try { await sql`DELETE FROM device_registrations WHERE client_id = ${clientId}`; } catch {}
+    // Finally delete the client
+    await sql`DELETE FROM clients WHERE id = ${clientId}`;
   },
 
   // Update client info

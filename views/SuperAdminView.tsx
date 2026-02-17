@@ -18,7 +18,7 @@ const SuperAdminView: React.FC = () => {
   const [clientStats, setClientStats] = useState<Record<number, any>>({});
   const [newClient, setNewClient] = useState({
     name: '', slug: '', phone: '', email: '', address: '',
-    ownerName: '', ownerEmail: '', ownerPassword: ''
+    ownerName: '', ownerEmail: '', ownerPassword: '', trialDays: 30
   });
   const [addingClient, setAddingClient] = useState(false);
   const [extendDays, setExtendDays] = useState<Record<number, number>>({});
@@ -83,7 +83,8 @@ const SuperAdminView: React.FC = () => {
         slug: newClient.slug.toLowerCase().replace(/[^a-z0-9-]/g, ''),
         phone: newClient.phone,
         email: newClient.email,
-        address: newClient.address
+        address: newClient.address,
+        trialDays: newClient.trialDays || 30
       });
       // 2. Create owner (admin user)
       await pgClientsService.createOwner(clientId, {
@@ -93,7 +94,7 @@ const SuperAdminView: React.FC = () => {
       });
       
       alert(`✅ تم إنشاء المركز بنجاح!\n\nالرابط: ${window.location.origin}/#/${newClient.slug}/login\nاسم المستخدم: ${newClient.ownerEmail}\nكلمة المرور: ${newClient.ownerPassword}`);
-      setNewClient({ name: '', slug: '', phone: '', email: '', address: '', ownerName: '', ownerEmail: '', ownerPassword: '' });
+      setNewClient({ name: '', slug: '', phone: '', email: '', address: '', ownerName: '', ownerEmail: '', ownerPassword: '', trialDays: 30 });
       setShowAddClient(false);
       await fetchClients();
     } catch (err: any) {
@@ -111,6 +112,18 @@ const SuperAdminView: React.FC = () => {
       await fetchClients();
     } catch (err: any) {
       alert('خطأ: ' + err.message);
+    }
+  };
+
+  const handleDelete = async (clientId: number, clientName: string) => {
+    if (!confirm(`هل أنت متأكد من حذف "${clientName}"؟\nسيتم حذف جميع البيانات (مرضى، مواعيد، مستخدمين) بشكل نهائي!`)) return;
+    if (!confirm('تأكيد نهائي: هذا الإجراء لا يمكن التراجع عنه!')) return;
+    try {
+      await pgClientsService.delete(clientId);
+      alert('تم حذف المركز وجميع بياناته بنجاح');
+      await fetchClients();
+    } catch (err: any) {
+      alert('خطأ في الحذف: ' + err.message);
     }
   };
 
@@ -145,6 +158,14 @@ const SuperAdminView: React.FC = () => {
   const formatDate = (d: string | null) => {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('ar-JO', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const getRemainingDays = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const end = new Date(dateStr).getTime();
+    const now = Date.now();
+    const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+    return diff;
   };
 
   // ==================== LOGIN SCREEN ====================
@@ -262,8 +283,26 @@ const SuperAdminView: React.FC = () => {
                         <span>مواعيد: <b className="text-slate-600 dark:text-slate-300">{stats.appointmentsCount || 0}</b></span>
                       </div>
                       <div className="flex flex-wrap gap-4 mt-1 text-xs text-slate-400">
-                        {client.status === 'trial' && <span>التجربة تنتهي: <b className="text-blue-600">{formatDate(client.trialEndsAt)}</b></span>}
-                        {client.subscriptionEndsAt && <span>الاشتراك ينتهي: <b className="text-green-600">{formatDate(client.subscriptionEndsAt)}</b></span>}
+                        {client.status === 'trial' && (() => {
+                          const remaining = getRemainingDays(client.trialEndsAt);
+                          return <span>التجربة تنتهي: <b className="text-blue-600">{formatDate(client.trialEndsAt)}</b>
+                            {remaining !== null && (
+                              <b className={`mr-1 ${remaining <= 5 ? 'text-red-500' : remaining <= 14 ? 'text-amber-500' : 'text-blue-500'}`}>
+                                ({remaining > 0 ? `${remaining} يوم متبقي` : 'منتهي'})
+                              </b>
+                            )}
+                          </span>;
+                        })()}
+                        {client.subscriptionEndsAt && (() => {
+                          const remaining = getRemainingDays(client.subscriptionEndsAt);
+                          return <span>الاشتراك ينتهي: <b className="text-green-600">{formatDate(client.subscriptionEndsAt)}</b>
+                            {remaining !== null && (
+                              <b className={`mr-1 ${remaining <= 5 ? 'text-red-500' : remaining <= 14 ? 'text-amber-500' : 'text-green-500'}`}>
+                                ({remaining > 0 ? `${remaining} يوم متبقي` : 'منتهي'})
+                              </b>
+                            )}
+                          </span>;
+                        })()}
                         <span>تاريخ التسجيل: {formatDate(client.createdAt)}</span>
                       </div>
                     </div>
@@ -298,6 +337,12 @@ const SuperAdminView: React.FC = () => {
                         className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition"
                       >
                         <i className="fa-solid fa-copy ml-1"></i> نسخ الرابط
+                      </button>
+                      <button
+                        onClick={() => handleDelete(client.id, client.name)}
+                        className="bg-red-50 dark:bg-red-900/20 text-red-500 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition"
+                      >
+                        <i className="fa-solid fa-trash ml-1"></i> حذف
                       </button>
                     </div>
                   </div>
@@ -355,6 +400,13 @@ const SuperAdminView: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">العنوان</label>
                 <input value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})}
                   className="w-full px-4 py-2.5 border rounded-xl dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="عمان - الأردن" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">مدة التجربة (أيام) *</label>
+                <input type="number" min="1" max="365" value={newClient.trialDays}
+                  onChange={e => setNewClient({...newClient, trialDays: parseInt(e.target.value) || 30})}
+                  className="w-full px-4 py-2.5 border rounded-xl dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
               </div>
 
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-200 dark:border-blue-800 mt-4">
