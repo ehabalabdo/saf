@@ -421,6 +421,7 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
       )}
 
       {activeTab === 'settings' ? (
+          <>
           <div className="bg-white rounded-[2rem] shadow-soft p-8 max-w-2xl animate-fade-in-down">
               <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                   <i className="fa-solid fa-sliders text-primary"></i> Clinic Configuration
@@ -498,6 +499,7 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
                 );
               })}
           </div>
+          </>
       ) : (
         <>
             {/* Stats Summary */}
