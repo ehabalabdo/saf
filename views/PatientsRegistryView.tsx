@@ -11,6 +11,7 @@ const PatientsRegistryView: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const slug = localStorage.getItem('currentClientSlug');
   
   const [patients, setPatients] = useState<Patient[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -133,7 +134,7 @@ const PatientsRegistryView: React.FC = () => {
                   ) : filteredPatients.map(p => (
                     <tr 
                         key={p.id} 
-                        onClick={() => navigate(`/patients/${p.id}`)}
+                        onClick={() => navigate(slug ? `/${slug}/patients/${p.id}` : `/patients/${p.id}`)}
                         className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
                     >
                        <td className="px-6 py-4">

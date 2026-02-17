@@ -164,6 +164,19 @@ const SlugRedirect: React.FC<{ path: string }> = ({ path }) => {
   return <RedirectHandler to="/login" />;
 };
 
+// --- Slug Redirect with ID param (e.g. /patients/:id → /:slug/patients/:id) ---
+const SlugRedirectWithId: React.FC<{ basePath: string }> = ({ basePath }) => {
+  const { id } = useParams<{ id: string }>();
+  const slug = localStorage.getItem('currentClientSlug');
+  if (slug && id) {
+    return <RedirectHandler to={`/${slug}${basePath}/${id}`} />;
+  }
+  if (slug) {
+    return <RedirectHandler to={`/${slug}${basePath}`} />;
+  }
+  return <RedirectHandler to="/login" />;
+};
+
 // --- App Router ---
 const AppRoutes: React.FC = () => {
   const { user, patientUser } = useAuth();
@@ -190,7 +203,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/admin" element={<SlugRedirect path="/admin" />} />
       <Route path="/reception" element={<SlugRedirect path="/reception" />} />
       <Route path="/doctor" element={<SlugRedirect path="/doctor" />} />
-      <Route path="/patients/:id" element={<SlugRedirect path="/patients" />} />
+      <Route path="/patients/:id" element={<SlugRedirectWithId basePath="/patients" />} />
       <Route path="/patients" element={<SlugRedirect path="/patients" />} />
       <Route path="/appointments" element={<SlugRedirect path="/appointments" />} />
       <Route path="/dental-lab" element={<SlugRedirect path="/dental-lab" />} />
