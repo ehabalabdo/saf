@@ -70,14 +70,34 @@ interface ProtectedRouteProps {
   allowedRoles: UserRole[];
 }
 
-// --- Read Only Banner (expired subscription) ---
-const ReadOnlyBanner: React.FC = () => {
-  const { isReadOnly, client } = useClient();
-  if (!isReadOnly) return null;
+// --- Expired Block Screen (blocks entire system) ---
+const ExpiredBlockScreen: React.FC = () => {
+  const { isExpired, client } = useClient();
+  if (!isExpired) return null;
   return (
-    <div className="bg-red-500 text-white text-center py-2 px-4 text-sm font-bold sticky top-0 z-50">
-      <i className="fa-solid fa-lock mr-2"></i>
-      انتهى اشتراك {client?.name || 'المركز'} — النظام بوضع القراءة فقط. تواصل مع الإدارة للتجديد.
+    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-red-950 to-slate-900 flex items-center justify-center" dir="rtl">
+      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 max-w-md text-center border border-white/20 shadow-2xl">
+        <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i className="fa-solid fa-lock text-red-400 text-4xl"></i>
+        </div>
+        <h1 className="text-2xl font-bold text-white mb-3">انتهى الاشتراك</h1>
+        <p className="text-slate-300 mb-2 text-lg">{client?.name || 'المركز'}</p>
+        <p className="text-slate-400 text-sm mb-6">
+          {client?.status === 'trial' 
+            ? 'انتهت فترة التجربة المجانية. تواصل مع إدارة المنصة لتفعيل الاشتراك.'
+            : client?.status === 'suspended'
+            ? 'تم إيقاف هذا المركز. تواصل مع إدارة المنصة.'
+            : 'انتهى اشتراكك. تواصل مع إدارة المنصة للتجديد.'}
+        </p>
+        <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-6">
+          <p className="text-slate-400 text-xs mb-1">للتواصل مع الإدارة</p>
+          <p className="text-white font-bold text-lg">0790904030</p>
+        </div>
+        <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+          className="text-slate-500 hover:text-white text-sm transition">
+          <i className="fa-solid fa-arrow-right-from-bracket ml-1"></i> تسجيل خروج
+        </button>
+      </div>
     </div>
   );
 };
@@ -307,7 +327,7 @@ const ClientSlugRoutes: React.FC = () => {
   return (
     <ClientProvider slug={slug}>
       <ClientGate>
-        <ReadOnlyBanner />
+        <ExpiredBlockScreen />
         <Routes>
           <Route path="/login" element={user ? <RedirectHandler to={`/${slug}/admin`} /> : <LoginView />} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><AdminView /></ProtectedRoute>} />

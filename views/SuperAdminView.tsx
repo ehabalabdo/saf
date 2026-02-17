@@ -104,11 +104,23 @@ const SuperAdminView: React.FC = () => {
     }
   };
 
-  const handleExtend = async (clientId: number) => {
+  const handleExtendTrial = async (clientId: number) => {
     const days = extendDays[clientId] || 30;
     try {
+      await pgClientsService.extendTrial(clientId, days);
+      alert(`تم تمديد التجربة ${days} يوم`);
+      await fetchClients();
+    } catch (err: any) {
+      alert('خطأ: ' + err.message);
+    }
+  };
+
+  const handleActivateSubscription = async (clientId: number) => {
+    const days = extendDays[clientId] || 30;
+    if (!confirm(`سيتم تحويل المركز إلى اشتراك مدفوع لمدة ${days} يوم. متأكد؟`)) return;
+    try {
       await pgClientsService.extendSubscription(clientId, days);
-      alert(`✅ تم تمديد الاشتراك ${days} يوم`);
+      alert(`تم تفعيل الاشتراك ${days} يوم`);
       await fetchClients();
     } catch (err: any) {
       alert('خطأ: ' + err.message);
@@ -308,17 +320,29 @@ const SuperAdminView: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col gap-2 min-w-[200px]">
+                    <div className="flex flex-col gap-2 min-w-[240px]">
                       <div className="flex items-center gap-2">
                         <input
                           type="number" min="1" value={extendDays[client.id] || 30}
                           onChange={e => setExtendDays({...extendDays, [client.id]: parseInt(e.target.value) || 30})}
                           className="w-16 px-2 py-1 border rounded-lg text-center text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                          placeholder="أيام"
                         />
-                        <button onClick={() => handleExtend(client.id)} className="flex-1 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600 transition">
-                          <i className="fa-solid fa-calendar-plus ml-1"></i> تمديد (يوم)
-                        </button>
+                        {client.status === 'trial' ? (
+                          <button onClick={() => handleExtendTrial(client.id)} className="flex-1 bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-600 transition">
+                            <i className="fa-solid fa-clock-rotate-left ml-1"></i> تمديد تجربة
+                          </button>
+                        ) : (
+                          <button onClick={() => handleActivateSubscription(client.id)} className="flex-1 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600 transition">
+                            <i className="fa-solid fa-calendar-plus ml-1"></i> تمديد اشتراك
+                          </button>
+                        )}
                       </div>
+                      {client.status === 'trial' && (
+                        <button onClick={() => handleActivateSubscription(client.id)} className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition">
+                          <i className="fa-solid fa-arrow-up-right-from-square ml-1"></i> تحويل لاشتراك مدفوع
+                        </button>
+                      )}
                       {client.status !== 'suspended' ? (
                         <button onClick={() => handleSuspend(client.id)} className="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-200 transition">
                           <i className="fa-solid fa-ban ml-1"></i> إيقاف

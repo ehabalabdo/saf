@@ -100,7 +100,29 @@ export const pgClientsService = {
     return userId;
   },
 
-  // Extend subscription by N days
+  // Extend trial period by N days (keeps trial status)
+  extendTrial: async (clientId: number, days: number): Promise<void> => {
+    await sql`
+      UPDATE clients 
+      SET trial_ends_at = COALESCE(
+            CASE WHEN trial_ends_at > NOW() THEN trial_ends_at ELSE NOW() END
+          , NOW()) + ${days + ' days'}::interval,
+          updated_at = NOW()
+      WHERE id = ${clientId}
+    `;
+  },
+
+  // Set trial end date directly
+  setTrialEndDate: async (clientId: number, endDate: string): Promise<void> => {
+    await sql`
+      UPDATE clients 
+      SET trial_ends_at = ${endDate}::timestamptz,
+          updated_at = NOW()
+      WHERE id = ${clientId}
+    `;
+  },
+
+  // Activate subscription (switch from trial to active) by N days
   extendSubscription: async (clientId: number, days: number): Promise<void> => {
     await sql`
       UPDATE clients 
