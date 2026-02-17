@@ -85,9 +85,7 @@ const LoginView: React.FC = () => {
       {/* نموذج مركزي */}
       <div className="relative z-10 w-full max-w-md mx-auto bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-2xl border border-white/40 dark:border-slate-700 backdrop-blur-xl p-8 flex flex-col items-center">
         <div className="flex flex-col items-center mb-8">
-          <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg overflow-hidden bg-white">
-            <img src={client?.logoUrl || "/logo.png"} alt={client?.name || "MED LOOP"} className="w-full h-full object-contain" />
-          </div>
+          <img src={client?.logoUrl || "/logo.png"} alt={client?.name || "MED LOOP"} className="h-16 w-16 object-contain mb-4" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{client?.name || 'Medloop'}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm">{t('sign_in_subtitle')}</p>
         </div>

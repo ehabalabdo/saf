@@ -91,9 +91,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
       <aside className="w-72 glass-sidebar text-white flex-shrink-0 hidden md:flex flex-col shadow-2xl relative z-20">
         <div className="p-8 pb-4">
           <div className="flex items-center gap-3 mb-1">
-             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shadow-lg shadow-primary/20 overflow-hidden">
-               <img src="/logo.png" alt="MED LOOP" className="w-full h-full object-contain" />
-             </div>
+             <img src="/logo.png" alt="MED LOOP" className="w-10 h-10 object-contain" />
              <div>
                 <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                     {t('system_name')}
@@ -171,9 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
         {/* Mobile Top Header */}
         <header className="md:hidden glass-panel p-4 flex justify-between items-center z-30 sticky top-0 shadow-sm shrink-0 dark:border-slate-700">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden">
-                <img src="/logo.png" alt="MED LOOP" className="w-full h-full object-contain" />
-            </div>
+            <img src="/logo.png" alt="MED LOOP" className="w-8 h-8 object-contain" />
             <h1 className="font-bold text-slate-800 dark:text-white text-base">{t('system_name')}</h1>
           </div>
           <div className="flex items-center gap-3">

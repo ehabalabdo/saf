@@ -121,9 +121,7 @@ const QueueDisplayView: React.FC = () => {
       {/* Header */}
       <header className="bg-slate-800 p-6 flex justify-between items-center border-b border-slate-700 shadow-lg relative">
         <div className="flex items-center gap-4">
-           <div className="w-16 h-16 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 overflow-hidden bg-white">
-             <img src="/logo.png" alt="MED LOOP" className="w-full h-full object-contain" />
-           </div>
+           <img src="/logo.png" alt="MED LOOP" className="w-16 h-16 object-contain" />
            <div>
              <h1 className="text-3xl font-bold tracking-wide">{t('system_name')}</h1>
              <p className="text-slate-400 text-lg">{t('queue_display_title')}</p>
