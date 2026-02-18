@@ -126,7 +126,17 @@ const HrEmployeeMeView: React.FC = () => {
       // 1) GPS
       const coords = await getGps();
 
-      // 2) Send check-in (GPS is the main verification)
+      // 2) Biometric (if registered)
+      if (profile?.bioRegistered) {
+        const bioOk = await authenticateBio();
+        if (!bioOk) {
+          setMsg({ text: isAr ? 'فشل التحقق من البصمة' : 'Biometric verification failed', type: 'err' });
+          setActionLoading(false);
+          return;
+        }
+      }
+
+      // 3) Send check-in
       const result = await hrAttendanceService.checkIn({
         latitude: coords.lat,
         longitude: coords.lng,
@@ -240,16 +250,46 @@ const HrEmployeeMeView: React.FC = () => {
             )}
           </div>
 
-          {/* GPS Verification Info */}
-          <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-              <i className="fa-solid fa-location-dot text-emerald-600 text-xl"></i>
+          {/* Biometric CTA (if NOT registered) */}
+          {!profile.bioRegistered && (
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-dashed border-amber-300 p-6 text-center">
+              <i className="fa-solid fa-fingerprint text-5xl text-amber-500 mb-3"></i>
+              <h3 className="text-lg font-extrabold text-amber-800 mb-1">
+                {isAr ? 'سجّل بصمتك الآن' : 'Register Your Biometric'}
+              </h3>
+              <p className="text-sm text-amber-600 mb-4">
+                {isAr ? 'البصمة مطلوبة لتسجيل الحضور والانصراف' : 'Biometric is required for attendance check-in/out'}
+              </p>
+              <button
+                onClick={handleRegisterBiometric}
+                disabled={actionLoading}
+                className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-2xl font-extrabold text-sm transition-colors shadow-lg shadow-amber-200 disabled:opacity-50"
+              >
+                {actionLoading ? <i className="fa-solid fa-circle-notch fa-spin me-2"></i> : <i className="fa-solid fa-fingerprint me-2"></i>}
+                {isAr ? 'تسجيل البصمة' : 'Register Biometric'}
+              </button>
             </div>
-            <div className="flex-1">
-              <p className="font-bold text-emerald-700">{isAr ? 'التحقق عبر الموقع' : 'GPS Verification'}</p>
-              <p className="text-xs text-emerald-500">{isAr ? 'يجب أن تكون داخل نطاق العيادة' : 'Must be within clinic radius'}</p>
+          )}
+
+          {/* Biometric Status (if registered) */}
+          {profile.bioRegistered && (
+            <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                <i className="fa-solid fa-fingerprint text-emerald-600 text-xl"></i>
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-emerald-700">{isAr ? 'البصمة مسجلة' : 'Biometric Registered'}</p>
+                <p className="text-xs text-emerald-500">{profile.bioCount} {isAr ? 'أجهزة مسجلة' : 'device(s) registered'}</p>
+              </div>
+              <button
+                onClick={handleRegisterBiometric}
+                disabled={actionLoading}
+                className="text-sm text-emerald-600 hover:text-emerald-800 font-bold px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition-colors"
+              >
+                <i className="fa-solid fa-plus me-1"></i> {isAr ? 'إضافة جهاز' : 'Add Device'}
+              </button>
             </div>
-          </div>
+          )}
 
           {/* Check-in / Check-out Buttons */}
           <div className="bg-white rounded-2xl shadow-soft border border-gray-100 p-6">
@@ -409,7 +449,12 @@ const HrEmployeeMeView: React.FC = () => {
           {/* Quick Info */}
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
             <p><i className="fa-solid fa-location-dot text-emerald-400 me-1"></i> {isAr ? 'يجب تفعيل GPS لتسجيل الحضور' : 'GPS must be enabled for attendance'}</p>
-            <p><i className="fa-solid fa-shield-halved text-indigo-400 me-1"></i> {isAr ? 'يجب أن تكون داخل نطاق العيادة' : 'You must be within clinic radius to check in/out'}</p>
+            {profile.bioRegistered && (
+              <p><i className="fa-solid fa-fingerprint text-emerald-400 me-1"></i> {isAr ? 'التحقق بالبصمة مفعل عند الدخول' : 'Biometric verification active on check-in'}</p>
+            )}
+            {!profile.bioRegistered && (
+              <p><i className="fa-solid fa-triangle-exclamation text-amber-400 me-1"></i> {isAr ? 'سجّل بصمتك لتفعيل التحقق الحيوي' : 'Register biometric to enable bio verification'}</p>
+            )}
           </div>
         </div>
       </div>
