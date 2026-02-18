@@ -55,24 +55,32 @@ const HrEmployeeMeView: React.FC = () => {
   }, [profile]);
 
   // ── Detect WebAuthn + platform authenticator on mount ──
+  // NOTE: We default to true and only set false if clearly unavailable.
+  // Some devices (especially iPhone after passkey deletion) may return false
+  // from isUserVerifyingPlatformAuthenticatorAvailable() temporarily.
+  // We still allow registration attempts — the browser will tell us if it fails.
   useEffect(() => {
     (async () => {
       try {
         if (
           typeof window === 'undefined' ||
-          !window.PublicKeyCredential ||
-          typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function'
+          !window.PublicKeyCredential
         ) {
           console.warn('[WebAuthn] PublicKeyCredential not available');
           setWebAuthnSupported(false);
           return;
         }
-        const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-        console.log('[WebAuthn] Platform authenticator available:', available);
-        setWebAuthnSupported(available);
+        // Try the check but default to true if it returns false (can be unreliable)
+        if (typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+          const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          console.log('[WebAuthn] Platform authenticator available:', available);
+          // Only block if PublicKeyCredential itself is missing, not based on this check alone
+        }
+        setWebAuthnSupported(true);
       } catch (e) {
         console.warn('[WebAuthn] Detection error:', e);
-        setWebAuthnSupported(false);
+        // Still allow — let the actual registration attempt decide
+        setWebAuthnSupported(true);
       }
     })();
   }, []);
@@ -297,30 +305,7 @@ const HrEmployeeMeView: React.FC = () => {
     );
   }
 
-  // ── WebAuthn NOT supported ──
-  if (!webAuthnSupported) {
-    return (
-      <Layout title={isAr ? 'بوابة الموظف' : 'Employee Portal'}>
-        <div className="max-w-md mx-auto text-center py-16 px-6">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
-            <i className="fa-solid fa-fingerprint text-red-400 text-4xl"></i>
-          </div>
-          <h2 className="text-xl font-extrabold text-slate-800 mb-3">
-            {isAr ? 'المتصفح لا يدعم البصمة' : 'Biometric Not Supported'}
-          </h2>
-          <p className="text-slate-500 mb-6 leading-relaxed">
-            {isAr
-              ? 'هذا المتصفح لا يدعم تسجيل الحضور بالبصمة. يرجى فتح الموقع من Chrome أو Safari مباشرة (مش من رابط واتساب أو فيسبوك).'
-              : 'This browser does not support biometric attendance. Please open the site directly from Chrome or Safari (not from WhatsApp or Facebook links).'}
-          </p>
-          <div className="bg-slate-50 rounded-2xl p-4 text-sm text-slate-500 space-y-2 text-start">
-            <p><i className="fa-brands fa-chrome text-emerald-500 me-2"></i> <strong>Android:</strong> {isAr ? 'افتح Chrome واكتب' : 'Open Chrome, type'} <span className="font-mono text-indigo-600">med.loopjo.com</span></p>
-            <p><i className="fa-brands fa-safari text-blue-500 me-2"></i> <strong>iPhone:</strong> {isAr ? 'افتح Safari واكتب' : 'Open Safari, type'} <span className="font-mono text-indigo-600">med.loopjo.com</span></p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  // ── webAuthnSupported is now more permissive — no full-page block ──
 
   return (
     <Layout title={isAr ? 'بوابة الموظف' : 'Employee Portal'}>
