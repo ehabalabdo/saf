@@ -152,13 +152,34 @@ export const hrPinService = {
   },
 };
 
+// ==================== WEBAUTHN ====================
+
+export const hrWebAuthnService = {
+  getRegisterOptions: async (): Promise<any> => {
+    return await api.post('/hr/webauthn/register/options', {});
+  },
+
+  verifyRegistration: async (body: any): Promise<{ verified: boolean }> => {
+    return await api.post('/hr/webauthn/register/verify', body);
+  },
+
+  getAuthenticateOptions: async (): Promise<any> => {
+    return await api.post('/hr/webauthn/authenticate/options', {});
+  },
+
+  verifyAuthentication: async (body: any): Promise<{ verified: boolean }> => {
+    return await api.post('/hr/webauthn/authenticate/verify', body);
+  },
+};
+
 // ==================== ATTENDANCE ====================
 
 export const hrAttendanceService = {
   checkIn: async (data: {
     latitude: number;
     longitude: number;
-    pin: string;
+    pin?: string;
+    bio_verified?: boolean;
     device_info?: string;
   }): Promise<{ message: string; time: string; clinicName: string }> => {
     return await api.post('/hr/attendance/check-in', data);
@@ -167,7 +188,8 @@ export const hrAttendanceService = {
   checkOut: async (data: {
     latitude: number;
     longitude: number;
-    pin: string;
+    pin?: string;
+    bio_verified?: boolean;
     device_info?: string;
   }): Promise<{
     message: string;

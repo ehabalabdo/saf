@@ -459,6 +459,8 @@ export interface HrMeProfile {
   email?: string;
   status: HrEmployeeStatus;
   pinSet: boolean;
+  bioRegistered: boolean;
+  bioCount: number;
   schedule: HrSchedule | null;
   todayAttendance: HrTodayAttendance | null;
 }
