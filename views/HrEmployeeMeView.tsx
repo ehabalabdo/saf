@@ -106,9 +106,13 @@ const HrEmployeeMeView: React.FC = () => {
     setMsg(null);
     try {
       const { startRegistration } = await import('@simplewebauthn/browser');
+      console.log('[Bio] Getting register options...');
       const options = await hrWebAuthnService.getRegisterOptions();
+      console.log('[Bio] Got options, rpId:', (options as any).rp?.id, 'hints:', (options as any).hints);
       const attResp = await startRegistration(options);
+      console.log('[Bio] startRegistration done, sending to verify...');
       const result = await hrWebAuthnService.verifyRegistration(attResp);
+      console.log('[Bio] Verify result:', result);
       if (result.verified) {
         setMsg({ text: isAr ? 'تم تسجيل البصمة بنجاح ✓' : 'Biometric registered successfully ✓', type: 'ok' });
         refresh();
@@ -130,9 +134,13 @@ const HrEmployeeMeView: React.FC = () => {
   const authenticateBio = async (): Promise<string | null> => {
     try {
       const { startAuthentication } = await import('@simplewebauthn/browser');
+      console.log('[Bio Auth] Getting authenticate options...');
       const options = await hrWebAuthnService.getAuthenticateOptions();
+      console.log('[Bio Auth] Got options, allowCredentials:', (options as any).allowCredentials?.length);
       const assertion = await startAuthentication(options);
+      console.log('[Bio Auth] startAuthentication done, verifying...');
       const result = await hrWebAuthnService.verifyAuthentication(assertion);
+      console.log('[Bio Auth] Verify result:', result);
       if (result.verified && result.bioToken) {
         return result.bioToken;
       }
