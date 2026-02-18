@@ -214,7 +214,7 @@ const HrEmployeeMeView: React.FC = () => {
       // 2) Biometric verification → get bioToken
       const bioToken = await authenticateBio();
       if (!bioToken) {
-        setMsg({ text: isAr ? 'فشل التحقق من البصمة' : 'Biometric verification failed', type: 'err' });
+        // authenticateBio already set the real error msg — don't overwrite it
         setActionLoading(false);
         return;
       }
@@ -244,7 +244,7 @@ const HrEmployeeMeView: React.FC = () => {
 
       const bioToken = await authenticateBio();
       if (!bioToken) {
-        setMsg({ text: isAr ? 'فشل التحقق من البصمة' : 'Biometric verification failed', type: 'err' });
+        // authenticateBio already set the real error msg — don't overwrite it
         setActionLoading(false);
         return;
       }
