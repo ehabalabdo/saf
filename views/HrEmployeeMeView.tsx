@@ -143,7 +143,8 @@ const HrEmployeeMeView: React.FC = () => {
   };
 
   // ── WebAuthn Authentication → returns bioToken from server ──
-  const authenticateBio = async (): Promise<string | null> => {
+  // If no passkey on this device, auto-register then retry
+  const authenticateBio = async (autoRetry = true): Promise<string | null> => {
     try {
       const { startAuthentication } = await import('@simplewebauthn/browser');
       console.log('[Bio Auth] Getting authenticate options...');
@@ -160,12 +161,45 @@ const HrEmployeeMeView: React.FC = () => {
       return null;
     } catch (e: any) {
       console.error('Bio auth failed:', e);
-      const errMsg = e?.message || e?.error || (isAr ? 'خطأ في البصمة' : 'Biometric error');
-      if (e?.name === 'NotAllowedError') {
-        setMsg({ text: isAr ? 'تم إلغاء عملية البصمة' : 'Biometric cancelled by user', type: 'err' });
-      } else {
-        setMsg({ text: errMsg, type: 'err' });
+
+      // If no passkey found on this device → auto-register then retry
+      const isNoPasskey = e?.name === 'NotAllowedError' ||
+        (e?.message || '').toLowerCase().includes('no credentials') ||
+        (e?.message || '').toLowerCase().includes('not allowed') ||
+        (e?.message || '').toLowerCase().includes('no passkey') ||
+        (e?.message || '').toLowerCase().includes('abort');
+
+      if (isNoPasskey && autoRetry) {
+        console.log('[Bio Auth] No passkey on this device, auto-registering...');
+        setMsg({ text: isAr ? 'جاري تسجيل البصمة على هالجهاز...' : 'Registering biometric on this device...', type: 'ok' });
+
+        try {
+          const { startRegistration } = await import('@simplewebauthn/browser');
+          const regOptions = await hrWebAuthnService.getRegisterOptions();
+          const attResp = await startRegistration(regOptions);
+          const regResult = await hrWebAuthnService.verifyRegistration(attResp);
+
+          if (regResult.verified) {
+            localStorage.setItem('hr_bio_device', 'yes');
+            setDeviceRegistered(true);
+            setMsg({ text: isAr ? 'تم تسجيل البصمة ✓ جاري التحقق...' : 'Biometric registered ✓ Verifying...', type: 'ok' });
+            // Now retry authentication (no more auto-retry to prevent infinite loop)
+            return await authenticateBio(false);
+          }
+        } catch (regErr: any) {
+          console.error('Auto-register failed:', regErr);
+          setMsg({
+            text: isAr
+              ? 'البصمة مش مسجلة على هالجهاز. اضغط "تسجيل البصمة" أولاً'
+              : 'No biometric on this device. Tap "Register Biometric" first',
+            type: 'err',
+          });
+          return null;
+        }
       }
+
+      const errMsg = e?.message || e?.error || (isAr ? 'خطأ في البصمة' : 'Biometric error');
+      setMsg({ text: errMsg, type: 'err' });
       return null;
     }
   };
