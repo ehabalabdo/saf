@@ -15,16 +15,29 @@ import { initSocketIO } from './socket';
 const app = express();
 const server = http.createServer(app);
 
-// PostgreSQL pool
+// PostgreSQL pool - credentials from environment variable only
+if (!process.env.DATABASE_URL) {
+  console.error('FATAL: DATABASE_URL environment variable is not set!');
+  process.exit(1);
+}
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_6nJUYTxI9yXP@ep-empty-boat-ag13jwix-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000
 });
 
-// Middleware
-app.use(cors({ origin: '*' }));
+// Middleware - restrict CORS to known origins
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://med.loopjo.com,http://localhost:5173,http://localhost:3000').split(',');
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '5mb' }));
 
 // Health check

@@ -26,15 +26,15 @@ const LoginView: React.FC = () => {
     setError('');
     try {
       await login(identifier, password);
-      // Login successful - redirect to appropriate dashboard
-      // Give AuthContext a moment to update state
-      setTimeout(() => {
+      // Login successful - redirect based on user type
+      // localStorage is already set synchronously by login() before it returns
+      const savedPatient = localStorage.getItem('patientUser');
+      
+      if (savedPatient) {
+        navigate(slug ? `/${slug}/patient/dashboard` : '/patient/dashboard', { replace: true });
+      } else {
         const savedUser = localStorage.getItem('user');
-        const savedPatient = localStorage.getItem('patientUser');
-        
-        if (savedPatient) {
-          navigate(slug ? `/${slug}/patient/dashboard` : '/patient/dashboard', { replace: true });
-        } else if (savedUser) {
+        if (savedUser) {
           try {
             const parsed = JSON.parse(savedUser);
             const role = parsed.role;
@@ -50,7 +50,7 @@ const LoginView: React.FC = () => {
             navigate(slug ? `/${slug}/` : '/', { replace: true });
           }
         }
-      }, 100);
+      }
     } catch (err: any) {
       setError(err.message || 'خطأ في تسجيل الدخول');
     } finally {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { ClinicService, PatientService, AppointmentService } from '../services/services';
-import { pgUsers, pgAppointments } from '../services/pgServices';
+import { pgUsers, pgAppointments } from '../services/apiServices';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Appointment, Clinic, Patient, UserRole, User, Gender } from '../types';
@@ -258,11 +258,11 @@ const AppointmentsView: React.FC = () => {
       setIsSuggestModalOpen(false);
       
       try {
-          await pgAppointments.update(suggestingAppId, { 
-              status: 'suggested', 
+          await AppointmentService.update(user, suggestingAppId, { 
+              status: 'suggested' as any, 
               suggestedDate: timestamp, 
               suggestedNotes: suggestNotes || 'موعد مقترح من العيادة'
-          });
+          } as any);
       } catch (e: any) {
           alert("Error: " + e.message);
           fetchData();

@@ -153,19 +153,25 @@ export const pgClientsService = {
     await sql`UPDATE clients SET enabled_features = ${JSON.stringify(features)}::jsonb, updated_at = NOW() WHERE id = ${clientId}`;
   },
 
-  // Delete a client and all related data
+  // Delete a client and all related data (wrapped in error handling - partial deletes roll back nothing with HTTP driver)
   delete: async (clientId: number): Promise<void> => {
-    // Delete in dependency order
-    await sql`DELETE FROM appointments WHERE client_id = ${clientId}`;
-    await sql`DELETE FROM patients WHERE client_id = ${clientId}`;
-    await sql`DELETE FROM users WHERE client_id = ${clientId}`;
-    await sql`DELETE FROM clinics WHERE client_id = ${clientId}`;
-    // Try device tables (may not exist)
-    try { await sql`DELETE FROM device_results WHERE client_id = ${clientId}`; } catch {}
-    try { await sql`DELETE FROM device_api_keys WHERE client_id = ${clientId}`; } catch {}
-    try { await sql`DELETE FROM device_registrations WHERE client_id = ${clientId}`; } catch {}
-    // Finally delete the client
-    await sql`DELETE FROM clients WHERE id = ${clientId}`;
+    try {
+      // Delete in dependency order
+      await sql`DELETE FROM invoices WHERE client_id = ${clientId}`;
+      await sql`DELETE FROM appointments WHERE client_id = ${clientId}`;
+      await sql`DELETE FROM patients WHERE client_id = ${clientId}`;
+      await sql`DELETE FROM users WHERE client_id = ${clientId}`;
+      await sql`DELETE FROM clinics WHERE client_id = ${clientId}`;
+      // Try device tables (may not exist)
+      try { await sql`DELETE FROM device_results WHERE client_id = ${clientId}`; } catch {}
+      try { await sql`DELETE FROM device_api_keys WHERE client_id = ${clientId}`; } catch {}
+      try { await sql`DELETE FROM device_registrations WHERE client_id = ${clientId}`; } catch {}
+      // Finally delete the client
+      await sql`DELETE FROM clients WHERE id = ${clientId}`;
+    } catch (error: any) {
+      console.error('[pgClientsService.delete] Failed to delete client:', clientId, error.message);
+      throw new Error(`Failed to delete client ${clientId}: ${error.message}`);
+    }
   },
 
   // Update client info
@@ -221,7 +227,7 @@ export const pgUsers = {
       return {
         uid: String(row.id),
         email: row.email,
-        password: row.password,
+        // Never expose passwords to the client
         name: row.full_name,
         role: row.role,
         clinicIds: clinicIds,
@@ -238,6 +244,51 @@ export const pgUsers = {
     return users;
   },
 
+  // Login: check password in SQL, never return it to client
+  findByLogin: async (identifier: string, password: string, clientId?: number): Promise<User | null> => {
+    const cid = clientId || getCurrentClientId();
+    const result = cid
+      ? await sql`
+          SELECT * FROM users 
+          WHERE (full_name = ${identifier} OR email = ${identifier})
+            AND password = ${password}
+            AND client_id = ${cid}
+          LIMIT 1
+        `
+      : await sql`
+          SELECT * FROM users 
+          WHERE (full_name = ${identifier} OR email = ${identifier})
+            AND password = ${password}
+          LIMIT 1
+        `;
+    if (result.length === 0) return null;
+    const row = result[0] as any;
+    let clinicIds: string[] = [];
+    if (row.clinic_ids) {
+      try {
+        const parsed = typeof row.clinic_ids === 'string' ? JSON.parse(row.clinic_ids) : row.clinic_ids;
+        clinicIds = Array.isArray(parsed) ? parsed : [];
+      } catch { clinicIds = []; }
+    }
+    if (clinicIds.length === 0 && row.clinic_id) {
+      clinicIds = [String(row.clinic_id)];
+    }
+    return {
+      uid: String(row.id),
+      email: row.email,
+      name: row.full_name,
+      role: row.role,
+      clinicIds,
+      clientId: row.client_id || undefined,
+      isActive: row.is_active !== false,
+      createdAt: new Date(row.created_at || Date.now()).getTime(),
+      createdBy: row.created_by || 'system',
+      updatedAt: new Date(row.updated_at || row.created_at || Date.now()).getTime(),
+      updatedBy: row.updated_by || 'system',
+      isArchived: row.is_archived || false
+    };
+  },
+
   create: async (user: Omit<User, 'uid' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>): Promise<string> => {
     const deptClinicId = user.clinicIds.length > 0 ? parseInt(user.clinicIds[0]) : null;
     const clinicIdsJson = JSON.stringify(user.clinicIds);
@@ -252,34 +303,42 @@ export const pgUsers = {
 
   update: async (uid: string, data: Partial<Pick<User, 'name' | 'email' | 'password' | 'role' | 'clinicIds' | 'isActive'>>): Promise<void> => {
     const userId = parseInt(uid);
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
     
-    // Execute separate UPDATEs for each field
-    await sql`UPDATE users SET updated_at = NOW() WHERE id = ${userId}`;
+    // Execute separate UPDATEs for each field — always filter by client_id for multi-tenant safety
+    await sql`UPDATE users SET updated_at = NOW() WHERE id = ${userId} ${clientFilter}`;
     
     if (data.name !== undefined) {
-      await sql`UPDATE users SET full_name = ${data.name} WHERE id = ${userId}`;
+      await sql`UPDATE users SET full_name = ${data.name} WHERE id = ${userId} ${clientFilter}`;
     }
     if (data.email !== undefined) {
-      await sql`UPDATE users SET email = ${data.email} WHERE id = ${userId}`;
+      await sql`UPDATE users SET email = ${data.email} WHERE id = ${userId} ${clientFilter}`;
     }
     if (data.password !== undefined && data.password !== '') {
-      await sql`UPDATE users SET password = ${data.password} WHERE id = ${userId}`;
+      await sql`UPDATE users SET password = ${data.password} WHERE id = ${userId} ${clientFilter}`;
     }
     if (data.role !== undefined) {
-      await sql`UPDATE users SET role = ${data.role} WHERE id = ${userId}`;
+      await sql`UPDATE users SET role = ${data.role} WHERE id = ${userId} ${clientFilter}`;
     }
     if (data.clinicIds !== undefined) {
       const clinicIdsJson = JSON.stringify(data.clinicIds);
-      await sql`UPDATE users SET clinic_ids = ${clinicIdsJson}::jsonb WHERE id = ${userId}`;
+      await sql`UPDATE users SET clinic_ids = ${clinicIdsJson}::jsonb WHERE id = ${userId} ${clientFilter}`;
     }
     if (data.isActive !== undefined) {
-      await sql`UPDATE users SET is_active = ${data.isActive} WHERE id = ${userId}`;
+      await sql`UPDATE users SET is_active = ${data.isActive} WHERE id = ${userId} ${clientFilter}`;
     }
   },
 
   delete: async (uid: string): Promise<void> => {
     const userId = parseInt(uid);
-    await sql`DELETE FROM users WHERE id = ${userId}`;
+    const cid = getCurrentClientId();
+    // Always filter by client_id for multi-tenant safety
+    if (cid) {
+      await sql`DELETE FROM users WHERE id = ${userId} AND client_id = ${cid}`;
+    } else {
+      await sql`DELETE FROM users WHERE id = ${userId}`;
+    }
   }
 };
 
@@ -318,31 +377,45 @@ export const pgClinics = {
 
   update: async (id: string, data: Partial<Pick<Clinic, 'name' | 'type' | 'category' | 'active'>>): Promise<void> => {
     const clinicId = parseInt(id);
+    const cid = getCurrentClientId();
     
-    await sql`UPDATE clinics SET updated_at = NOW() WHERE id = ${clinicId}`;
+    // Always filter by client_id for multi-tenant safety
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    
+    await sql`UPDATE clinics SET updated_at = NOW() WHERE id = ${clinicId} ${clientFilter}`;
     
     if (data.name !== undefined) {
-      await sql`UPDATE clinics SET name = ${data.name} WHERE id = ${clinicId}`;
+      await sql`UPDATE clinics SET name = ${data.name} WHERE id = ${clinicId} ${clientFilter}`;
     }
     if (data.type !== undefined) {
-      await sql`UPDATE clinics SET type = ${data.type} WHERE id = ${clinicId}`;
+      await sql`UPDATE clinics SET type = ${data.type} WHERE id = ${clinicId} ${clientFilter}`;
     }
     if (data.category !== undefined) {
-      await sql`UPDATE clinics SET category = ${data.category} WHERE id = ${clinicId}`;
+      await sql`UPDATE clinics SET category = ${data.category} WHERE id = ${clinicId} ${clientFilter}`;
     }
     if (data.active !== undefined) {
-      await sql`UPDATE clinics SET active = ${data.active} WHERE id = ${clinicId}`;
+      await sql`UPDATE clinics SET active = ${data.active} WHERE id = ${clinicId} ${clientFilter}`;
     }
   },
 
   toggleStatus: async (id: string, active: boolean): Promise<void> => {
     const clinicId = parseInt(id);
-    await sql`UPDATE clinics SET active = ${active} WHERE id = ${clinicId}`;
+    const cid = getCurrentClientId();
+    if (cid) {
+      await sql`UPDATE clinics SET active = ${active} WHERE id = ${clinicId} AND client_id = ${cid}`;
+    } else {
+      await sql`UPDATE clinics SET active = ${active} WHERE id = ${clinicId}`;
+    }
   },
 
   delete: async (id: string): Promise<void> => {
     const clinicId = parseInt(id);
-    await sql`DELETE FROM clinics WHERE id = ${clinicId}`;
+    const cid = getCurrentClientId();
+    if (cid) {
+      await sql`DELETE FROM clinics WHERE id = ${clinicId} AND client_id = ${cid}`;
+    } else {
+      await sql`DELETE FROM clinics WHERE id = ${clinicId}`;
+    }
   }
 };
 
@@ -385,16 +458,17 @@ export const pgPatients = {
         try { history = JSON.parse(history); } catch { history = []; }
       }
       
+      const dobStr = row.date_of_birth instanceof Date ? row.date_of_birth.toISOString().split('T')[0] : (row.date_of_birth ? String(row.date_of_birth) : undefined);
       return {
         id: String(row.id),
         name: row.full_name,
-        age: row.date_of_birth ? calculateAge(row.date_of_birth) : (row.age || 0),
-        dateOfBirth: row.date_of_birth || undefined,
+        age: dobStr ? calculateAge(dobStr) : (row.age || 0),
+        dateOfBirth: dobStr || undefined,
         gender: (row.gender || 'male') as 'male' | 'female',
         phone: row.phone || '',
         username: row.username || undefined,
         email: row.email || undefined,
-        password: row.password || undefined,
+        // Never expose password to the client
         hasAccess: row.has_access || false,
         medicalProfile: medicalProfile && Object.keys(medicalProfile).length > 0 ? medicalProfile : {
           allergies: { exists: false, details: '' },
@@ -449,12 +523,13 @@ export const pgPatients = {
     if (typeof currentVisit === 'string') { try { currentVisit = JSON.parse(currentVisit); } catch { currentVisit = null; } }
     let history = row.history;
     if (typeof history === 'string') { try { history = JSON.parse(history); } catch { history = []; } }
+    const dobStr = row.date_of_birth instanceof Date ? row.date_of_birth.toISOString().split('T')[0] : (row.date_of_birth ? String(row.date_of_birth) : undefined);
     return {
-      id: String(row.id), name: row.full_name, age: row.date_of_birth ? calculateAge(row.date_of_birth) : (row.age || 0),
-      dateOfBirth: row.date_of_birth || undefined,
+      id: String(row.id), name: row.full_name, age: dobStr ? calculateAge(dobStr) : (row.age || 0),
+      dateOfBirth: dobStr || undefined,
       gender: (row.gender || 'male') as 'male' | 'female', phone: row.phone || '',
       username: row.username || undefined, email: row.email || undefined,
-      password: row.password || undefined, hasAccess: row.has_access || false,
+      hasAccess: row.has_access || false,
       medicalProfile: medicalProfile && Object.keys(medicalProfile).length > 0 ? medicalProfile : {
         allergies: { exists: false, details: '' }, chronicConditions: { exists: false, details: '' },
         currentMedications: { exists: false, details: '' }, isPregnant: false, notes: row.notes || ''
@@ -472,7 +547,10 @@ export const pgPatients = {
   getById: async (id: string): Promise<Patient | null> => {
     const idInt = parseInt(id);
     if (isNaN(idInt)) return null;
-    const result = await sql`SELECT * FROM patients WHERE id = ${idInt} LIMIT 1`;
+    const cid = getCurrentClientId();
+    const result = cid
+      ? await sql`SELECT * FROM patients WHERE id = ${idInt} AND client_id = ${cid} LIMIT 1`
+      : await sql`SELECT * FROM patients WHERE id = ${idInt} LIMIT 1`;
     if (result.length === 0) return null;
     const row = result[0] as any;
     let medicalProfile = row.medical_profile;
@@ -487,16 +565,17 @@ export const pgPatients = {
     if (typeof history === 'string') {
       try { history = JSON.parse(history); } catch { history = []; }
     }
+    const dobStr2 = row.date_of_birth instanceof Date ? row.date_of_birth.toISOString().split('T')[0] : (row.date_of_birth ? String(row.date_of_birth) : undefined);
     return {
       id: String(row.id),
       name: row.full_name,
-      age: row.date_of_birth ? calculateAge(row.date_of_birth) : (row.age || 0),
-      dateOfBirth: row.date_of_birth || undefined,
+      age: dobStr2 ? calculateAge(dobStr2) : (row.age || 0),
+      dateOfBirth: dobStr2 || undefined,
       gender: (row.gender || 'male') as 'male' | 'female',
       phone: row.phone || '',
       username: row.username || undefined,
       email: row.email || undefined,
-      password: row.password || undefined,
+      // Never expose password to the client
       hasAccess: row.has_access || false,
       medicalProfile: medicalProfile && Object.keys(medicalProfile).length > 0 ? medicalProfile : {
         allergies: { exists: false, details: '' },
@@ -556,6 +635,7 @@ export const pgPatients = {
 
   update: async (id: string, data: Partial<Patient>): Promise<void> => {
     const patientId = parseInt(id);
+    const cid = getCurrentClientId();
     
     console.log('[pgPatients.update] 🔄 Updating patient:', {
       id: patientId,
@@ -564,48 +644,53 @@ export const pgPatients = {
     
     try {
       // Execute separate UPDATE for each field - Neon-compatible approach
-      // Always update updated_at timestamp
-      await sql`UPDATE patients SET updated_at = NOW() WHERE id = ${patientId}`;
+      // Always filter by client_id for multi-tenant safety
+      if (cid) {
+        await sql`UPDATE patients SET updated_at = NOW() WHERE id = ${patientId} AND client_id = ${cid}`;
+      } else {
+        await sql`UPDATE patients SET updated_at = NOW() WHERE id = ${patientId}`;
+      }
+      const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
       
       if (data.name !== undefined) {
-        await sql`UPDATE patients SET full_name = ${data.name} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET full_name = ${data.name} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.dateOfBirth !== undefined) {
-        await sql`UPDATE patients SET date_of_birth = ${data.dateOfBirth}, age = ${calculateAge(data.dateOfBirth)} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET date_of_birth = ${data.dateOfBirth}, age = ${calculateAge(data.dateOfBirth)} WHERE id = ${patientId} ${clientFilter}`;
       } else if (data.age !== undefined) {
-        await sql`UPDATE patients SET age = ${data.age} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET age = ${data.age} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.gender !== undefined) {
-        await sql`UPDATE patients SET gender = ${data.gender} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET gender = ${data.gender} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.phone !== undefined) {
-        await sql`UPDATE patients SET phone = ${data.phone} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET phone = ${data.phone} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.username !== undefined) {
-        await sql`UPDATE patients SET username = ${data.username || null} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET username = ${data.username || null} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.email !== undefined) {
-        await sql`UPDATE patients SET email = ${data.email || null} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET email = ${data.email || null} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.password !== undefined && data.password !== '') {
-        await sql`UPDATE patients SET password = ${data.password} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET password = ${data.password} WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.hasAccess !== undefined) {
-        await sql`UPDATE patients SET has_access = ${data.hasAccess} WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET has_access = ${data.hasAccess} WHERE id = ${patientId} ${clientFilter}`;
       }
       
       // JSON columns - convert to string first, then cast to jsonb in SQL
       if (data.medicalProfile !== undefined) {
         const jsonStr = JSON.stringify(data.medicalProfile);
-        await sql`UPDATE patients SET medical_profile = ${jsonStr}::jsonb WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET medical_profile = ${jsonStr}::jsonb WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.currentVisit !== undefined) {
         const jsonStr = JSON.stringify(data.currentVisit);
-        await sql`UPDATE patients SET current_visit = ${jsonStr}::jsonb WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET current_visit = ${jsonStr}::jsonb WHERE id = ${patientId} ${clientFilter}`;
       }
       if (data.history !== undefined) {
         const jsonStr = JSON.stringify(data.history);
-        await sql`UPDATE patients SET history = ${jsonStr}::jsonb WHERE id = ${patientId}`;
+        await sql`UPDATE patients SET history = ${jsonStr}::jsonb WHERE id = ${patientId} ${clientFilter}`;
       }
       
       console.log('[pgPatients.update] ✅ Update successful');
@@ -681,7 +766,10 @@ export const pgAppointments = {
 
   getByPatientId: async (patientId: string): Promise<Appointment[]> => {
     const patientIdInt = parseInt(patientId) || 0;
-    const result = await sql`SELECT * FROM appointments WHERE patient_id = ${patientIdInt} ORDER BY start_time DESC`;
+    const cid = getCurrentClientId();
+    const result = cid
+      ? await sql`SELECT * FROM appointments WHERE patient_id = ${patientIdInt} AND client_id = ${cid} ORDER BY start_time DESC`
+      : await sql`SELECT * FROM appointments WHERE patient_id = ${patientIdInt} ORDER BY start_time DESC`;
     return result.map((row: any) => ({
       id: String(row.id),
       patientId: String(row.patient_id),
@@ -729,38 +817,42 @@ export const pgAppointments = {
 
   update: async (id: string, data: Partial<Pick<Appointment, 'clinicId'|'doctorId'|'date'|'reason'|'status'|'suggestedDate'|'suggestedNotes'>>): Promise<void> => {
     const idInt = parseInt(id);
-    await sql`UPDATE appointments SET updated_at = NOW() WHERE id = ${idInt}`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`UPDATE appointments SET updated_at = NOW() WHERE id = ${idInt} ${clientFilter}`;
     
     if (data.clinicId !== undefined) {
       const clinicIdInt = parseInt(data.clinicId) || 0;
-      await sql`UPDATE appointments SET clinic_id = ${clinicIdInt} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET clinic_id = ${clinicIdInt} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.doctorId !== undefined) {
       const doctorIdInt = data.doctorId ? parseInt(data.doctorId) : null;
-      await sql`UPDATE appointments SET doctor_id = ${doctorIdInt} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET doctor_id = ${doctorIdInt} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.date !== undefined) {
       const dateStr = new Date(data.date).toISOString();
-      await sql`UPDATE appointments SET start_time = ${dateStr} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET start_time = ${dateStr} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.reason !== undefined) {
-      await sql`UPDATE appointments SET reason = ${data.reason} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET reason = ${data.reason} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.status !== undefined) {
-      await sql`UPDATE appointments SET status = ${data.status} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET status = ${data.status} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.suggestedDate !== undefined) {
       const suggestedDateStr = new Date(data.suggestedDate).toISOString();
-      await sql`UPDATE appointments SET suggested_date = ${suggestedDateStr} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET suggested_date = ${suggestedDateStr} WHERE id = ${idInt} ${clientFilter}`;
     }
     if (data.suggestedNotes !== undefined) {
-      await sql`UPDATE appointments SET suggested_notes = ${data.suggestedNotes} WHERE id = ${idInt}`;
+      await sql`UPDATE appointments SET suggested_notes = ${data.suggestedNotes} WHERE id = ${idInt} ${clientFilter}`;
     }
   },
 
   delete: async (id: string): Promise<void> => {
     const idInt = parseInt(id);
-    await sql`DELETE FROM appointments WHERE id = ${idInt}`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`DELETE FROM appointments WHERE id = ${idInt} ${clientFilter}`;
   }
 };
 
@@ -809,28 +901,32 @@ export const pgInvoices = {
   },
 
   update: async (id: string, data: any): Promise<void> => {
-    await sql`UPDATE invoices SET updated_at = NOW() WHERE id = ${id}`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`UPDATE invoices SET updated_at = NOW() WHERE id = ${id} ${clientFilter}`;
     
     if (data.items !== undefined) {
       const itemsJson = JSON.stringify(data.items);
-      await sql`UPDATE invoices SET items = ${itemsJson}::jsonb WHERE id = ${id}`;
+      await sql`UPDATE invoices SET items = ${itemsJson}::jsonb WHERE id = ${id} ${clientFilter}`;
     }
     if (data.totalAmount !== undefined) {
-      await sql`UPDATE invoices SET total_amount = ${data.totalAmount} WHERE id = ${id}`;
+      await sql`UPDATE invoices SET total_amount = ${data.totalAmount} WHERE id = ${id} ${clientFilter}`;
     }
     if (data.paidAmount !== undefined) {
-      await sql`UPDATE invoices SET paid_amount = ${data.paidAmount} WHERE id = ${id}`;
+      await sql`UPDATE invoices SET paid_amount = ${data.paidAmount} WHERE id = ${id} ${clientFilter}`;
     }
     if (data.paymentMethod !== undefined) {
-      await sql`UPDATE invoices SET payment_method = ${data.paymentMethod} WHERE id = ${id}`;
+      await sql`UPDATE invoices SET payment_method = ${data.paymentMethod} WHERE id = ${id} ${clientFilter}`;
     }
     if (data.status !== undefined) {
-      await sql`UPDATE invoices SET status = ${data.status} WHERE id = ${id}`;
+      await sql`UPDATE invoices SET status = ${data.status} WHERE id = ${id} ${clientFilter}`;
     }
   },
 
   delete: async (id: string): Promise<void> => {
-    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`DELETE FROM invoices WHERE id = ${id} ${clientFilter}`;
   }
 };
 
@@ -904,22 +1000,28 @@ export const pgDevices = {
   },
 
   update: async (id: string, data: Partial<Device>): Promise<void> => {
-    await sql`UPDATE devices SET updated_at = NOW() WHERE id = ${id}::uuid`;
-    if (data.name !== undefined) await sql`UPDATE devices SET name = ${data.name} WHERE id = ${id}::uuid`;
-    if (data.type !== undefined) await sql`UPDATE devices SET type = ${data.type} WHERE id = ${id}::uuid`;
-    if (data.connectionType !== undefined) await sql`UPDATE devices SET connection_type = ${data.connectionType} WHERE id = ${id}::uuid`;
-    if (data.ipAddress !== undefined) await sql`UPDATE devices SET ip_address = ${data.ipAddress} WHERE id = ${id}::uuid`;
-    if (data.port !== undefined) await sql`UPDATE devices SET port = ${data.port} WHERE id = ${id}::uuid`;
-    if (data.comPort !== undefined) await sql`UPDATE devices SET com_port = ${data.comPort} WHERE id = ${id}::uuid`;
-    if (data.isActive !== undefined) await sql`UPDATE devices SET is_active = ${data.isActive} WHERE id = ${id}::uuid`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`UPDATE devices SET updated_at = NOW() WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.name !== undefined) await sql`UPDATE devices SET name = ${data.name} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.type !== undefined) await sql`UPDATE devices SET type = ${data.type} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.connectionType !== undefined) await sql`UPDATE devices SET connection_type = ${data.connectionType} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.ipAddress !== undefined) await sql`UPDATE devices SET ip_address = ${data.ipAddress} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.port !== undefined) await sql`UPDATE devices SET port = ${data.port} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.comPort !== undefined) await sql`UPDATE devices SET com_port = ${data.comPort} WHERE id = ${id}::uuid ${clientFilter}`;
+    if (data.isActive !== undefined) await sql`UPDATE devices SET is_active = ${data.isActive} WHERE id = ${id}::uuid ${clientFilter}`;
   },
 
   updateLastSeen: async (id: string): Promise<void> => {
-    await sql`UPDATE devices SET last_seen_at = NOW() WHERE id = ${id}::uuid`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`UPDATE devices SET last_seen_at = NOW() WHERE id = ${id}::uuid ${clientFilter}`;
   },
 
   delete: async (id: string): Promise<void> => {
-    await sql`DELETE FROM devices WHERE id = ${id}::uuid`;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
+    await sql`DELETE FROM devices WHERE id = ${id}::uuid ${clientFilter}`;
   }
 };
 
@@ -1058,20 +1160,24 @@ export const pgDeviceResults = {
   /** Manual match: link a pending result to a patient */
   manualMatch: async (resultId: string, patientId: string, matchedBy: string): Promise<void> => {
     const patientIdInt = parseInt(patientId) || 0;
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
     await sql`
       UPDATE device_results
       SET status = 'matched',
           matched_patient_id = ${patientIdInt},
           matched_at = NOW(),
           matched_by = ${matchedBy}
-      WHERE id = ${resultId}::uuid AND status = 'pending'
+      WHERE id = ${resultId}::uuid AND status = 'pending' ${clientFilter}
     `;
   },
 
   /** Reject a result (mark as rejected) */
   reject: async (resultId: string): Promise<void> => {
+    const cid = getCurrentClientId();
+    const clientFilter = cid ? sql`AND client_id = ${cid}` : sql``;
     await sql`
-      UPDATE device_results SET status = 'rejected' WHERE id = ${resultId}::uuid
+      UPDATE device_results SET status = 'rejected' WHERE id = ${resultId}::uuid ${clientFilter}
     `;
   },
 

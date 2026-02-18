@@ -1,7 +1,7 @@
 
 import { Clinic, Patient, User, UserRole, AuditMetadata, VisitData, Appointment, Invoice, Notification, PrescriptionItem, Attachment, SystemSettings, ClinicCategory, LabCase, LabCaseStatus, ImplantItem, ImplantOrder, ImplantOrderStatus, Course, CourseStudent, CourseSession, CourseStatus, Device, DeviceResult, DeviceResultStatus, DeviceResultPayload } from '../types';
 import { mockDb } from './mockFirebase';
-import { pgUsers, pgClinics, pgPatients, pgAppointments, pgInvoices, pgDevices, pgDeviceResults } from './pgServices';
+import { pgUsers, pgClinics, pgPatients, pgAppointments, pgInvoices, pgDevices, pgDeviceResults } from './apiServices';
 
 // Check if we should use PostgreSQL (production) or mockDb (development)
 // ✅ ENABLED: Database schema fixed + Neon-compatible queries

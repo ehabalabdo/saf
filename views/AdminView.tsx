@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { ClinicService, AuthService } from '../services/services';
-import { pgUsers, pgClientsService } from '../services/pgServices';
+import { ClinicService, AuthService, BillingService } from '../services/services';
+import { pgUsers, pgClientsService } from '../services/apiServices';
 import { api } from '../src/api';
 import { Clinic, User, UserRole, Invoice, SystemSettings, ClinicCategory, ClientFeatures } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -57,12 +57,14 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [c, allUsers] = await Promise.all([
+            const [c, allUsers, allInvoices] = await Promise.all([
                 ClinicService.getActive(),
-                pgUsers.getAll()
+                pgUsers.getAll(),
+                BillingService.getAll(currentUser!)
             ]);
             setClinics(c);
             setUsers(allUsers);
+            setInvoices(allInvoices);
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {
@@ -120,7 +122,7 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
           setUserFormData({
               name: user.name,
               email: user.email,
-              password: user.password || '',
+              password: '',
               role: user.role,
               clinicIds: [...user.clinicIds]
           });

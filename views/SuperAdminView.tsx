@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Client, SuperAdmin } from '../types';
-import { pgClientsService, pgSuperAdmin } from '../services/pgServices';
+import { pgClientsService, pgSuperAdmin } from '../services/apiServices';
 
 const SuperAdminView: React.FC = () => {
   const navigate = useNavigate();
@@ -28,12 +28,20 @@ const SuperAdminView: React.FC = () => {
     try {
       const all = await pgClientsService.getAll();
       setClients(all);
-      // Load stats for each client
+      // Load stats for all clients in parallel (much faster than sequential)
+      const statsEntries = await Promise.all(
+        all.map(async (c) => {
+          try {
+            const stats = await pgClientsService.getStats(c.id);
+            return [c.id, stats] as const;
+          } catch {
+            return [c.id, { patientsCount: 0, usersCount: 0, appointmentsCount: 0 }] as const;
+          }
+        })
+      );
       const statsMap: Record<number, any> = {};
-      for (const c of all) {
-        try {
-          statsMap[c.id] = await pgClientsService.getStats(c.id);
-        } catch { statsMap[c.id] = { patientsCount: 0, usersCount: 0, appointmentsCount: 0 }; }
+      for (const [id, stats] of statsEntries) {
+        statsMap[id] = stats;
       }
       setClientStats(statsMap);
     } catch (err) {
@@ -93,7 +101,7 @@ const SuperAdminView: React.FC = () => {
         password: newClient.ownerPassword
       });
       
-      alert(`تم إنشاء المركز بنجاح!\n\nالرابط: ${window.location.origin}/${newClient.slug}/login\nاسم المستخدم: ${newClient.ownerEmail}\nكلمة المرور: ${newClient.ownerPassword}`);
+      alert(`تم إنشاء المركز بنجاح!\n\nالرابط: ${window.location.origin}/${newClient.slug}/login\nاسم المستخدم: ${newClient.ownerEmail}`);
       setNewClient({ name: '', slug: '', phone: '', email: '', address: '', ownerName: '', ownerEmail: '', ownerPassword: '', trialDays: 30 });
       setShowAddClient(false);
       await fetchClients();
@@ -448,7 +456,7 @@ const SuperAdminView: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">كلمة المرور *</label>
-                <input type="text" value={newClient.ownerPassword} onChange={e => setNewClient({...newClient, ownerPassword: e.target.value})}
+                <input type="password" value={newClient.ownerPassword} onChange={e => setNewClient({...newClient, ownerPassword: e.target.value})}
                   className="w-full px-4 py-2.5 border rounded-xl dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="كلمة مرور قوية" required />
               </div>
               

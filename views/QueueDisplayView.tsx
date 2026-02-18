@@ -47,6 +47,8 @@ const QueueDisplayView: React.FC = () => {
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
     osc.start();
     osc.stop(ctx.currentTime + 0.5);
+    // Close AudioContext after sound finishes to prevent memory leak
+    osc.onended = () => ctx.close();
 
     // Speak after chime
     setTimeout(() => {
@@ -57,20 +59,25 @@ const QueueDisplayView: React.FC = () => {
     }, 600);
   };
 
-  // Fetch Logic
+  // Load clinic names once (separate from subscription to avoid infinite loop)
   useEffect(() => {
     if (!user) return;
-
-    // 1. Get Clinic Names
     ClinicService.getActive().then(all => {
       const map: Record<string, string> = {};
       all.forEach(c => map[c.id] = c.name);
       setClinics(map);
     });
+  }, [user]);
 
-    // 2. Subscribe to Patients (PatientService already filters by visitId)
-    const dummyUser = { ...user, role: UserRole.SECRETARY }; 
-    const subscription = PatientService.subscribe(dummyUser, (data) => {
+  // Ref to always have latest clinics in subscription callback without re-subscribing
+  const clinicsRef = React.useRef(clinics);
+  useEffect(() => { clinicsRef.current = clinics; }, [clinics]);
+
+  // Subscribe to Patients (separate effect, no clinics dependency)
+  useEffect(() => {
+    if (!user) return;
+
+    const subscription = PatientService.subscribe(user, (data) => {
        console.log('[QueueDisplayView] Received patients from subscription:', {
          count: data.length,
          patients: data.map(p => ({ id: p.id, name: p.name, status: p.currentVisit.status }))
@@ -86,7 +93,7 @@ const QueueDisplayView: React.FC = () => {
        active.forEach(p => {
            const prev = prevPatientsRef.current.find(old => old.id === p.id);
            if (p.currentVisit.status === 'in-progress' && prev?.currentVisit.status !== 'in-progress') {
-               const clinicName = clinics[p.currentVisit.clinicId] || 'Clinic';
+               const clinicName = clinicsRef.current[p.currentVisit.clinicId] || 'Clinic';
                
                // Show popup notification
                setCurrentCalling({ name: p.name, clinic: clinicName, patientId: p.id });
@@ -113,7 +120,7 @@ const QueueDisplayView: React.FC = () => {
     return () => {
         if(unsubscribeRef.current) unsubscribeRef.current();
     };
-  }, [user, clinics, soundEnabled, language]); // Added all dependencies
+  }, [user, soundEnabled, language]); // clinics removed to prevent infinite loop (use clinicsRef)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col font-sans">

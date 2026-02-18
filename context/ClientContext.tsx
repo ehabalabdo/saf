@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Client, ClientFeatures } from '../types';
-import sql from '../services/db';
+import { pgClientsService } from '../services/apiServices';
 
 interface ClientContextType {
   client: Client | null;
@@ -31,29 +31,7 @@ function getSlugFromURL(): string | null {
 
 async function fetchClientBySlug(slug: string): Promise<Client | null> {
   try {
-    const result = await sql`
-      SELECT * FROM clients WHERE slug = ${slug} AND is_active = true LIMIT 1
-    `;
-    if (result.length === 0) return null;
-    
-    const row = result[0] as any;
-    return {
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      logoUrl: row.logo_url || '',
-      phone: row.phone || '',
-      email: row.email || '',
-      address: row.address || '',
-      status: row.status,
-      trialEndsAt: row.trial_ends_at,
-      subscriptionEndsAt: row.subscription_ends_at,
-      ownerUserId: row.owner_user_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      isActive: row.is_active,
-      enabledFeatures: row.enabled_features || { dental_lab: false, implant_company: false, academy: false, device_results: false }
-    };
+    return await pgClientsService.getBySlug(slug);
   } catch (err) {
     console.error('[ClientContext] Error fetching client:', err);
     return null;
@@ -147,5 +125,7 @@ export const useClientSafe = () => {
 // Helper to get current client_id from anywhere
 export function getCurrentClientId(): number | null {
   const saved = localStorage.getItem('currentClientId');
-  return saved ? parseInt(saved) : null;
+  if (!saved) return null;
+  const parsed = parseInt(saved, 10);
+  return isNaN(parsed) ? null : parsed;
 }

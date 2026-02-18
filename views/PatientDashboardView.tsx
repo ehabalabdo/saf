@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, VisitData, Clinic, Appointment } from '../types';
-import { pgPatients, pgAppointments } from '../services/pgServices';
-import { ClinicService } from '../services/services';
+import { pgPatients, pgAppointments } from '../services/apiServices';
+import { ClinicService, AppointmentService } from '../services/services';
+import { getCurrentClientId } from '../context/ClientContext';
 
 const PatientDashboardView: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const PatientDashboardView: React.FC = () => {
       }
 
       try {
-        // Load fresh patient data
+        // Load fresh patient data (use getAll with client_id scope, then find by id)
         const freshData = await pgPatients.getById(patientUser.id);
         if (isMounted && freshData) setPatient(freshData);
       } catch (e) {
@@ -61,7 +62,8 @@ const PatientDashboardView: React.FC = () => {
       }
 
       try {
-        // Load appointments
+        // Load appointments (with client_id filter)
+        const cid = getCurrentClientId();
         const myApps = await pgAppointments.getByPatientId(patientUser.id);
         if (isMounted) {
           const upcomingApps = myApps.filter(a => 
@@ -103,6 +105,20 @@ const PatientDashboardView: React.FC = () => {
       const timestamp = new Date(`${bookingDate}T${bookingTime}`).getTime();
       if (isNaN(timestamp)) throw new Error('تاريخ غير صالح');
 
+      // Check for duplicate booking on the same day/clinic
+      const existingApps = await pgAppointments.getByPatientId(patient.id);
+      const sameDayBooking = existingApps.find(a => {
+        if (a.status === 'cancelled') return false;
+        const existingDay = new Date(a.date).toDateString();
+        const newDay = new Date(timestamp).toDateString();
+        return existingDay === newDay && a.clinicId === bookingClinic;
+      });
+      if (sameDayBooking) {
+        alert('لديك حجز موجود بالفعل في نفس اليوم لهذه العيادة');
+        setBookingLoading(false);
+        return;
+      }
+
       console.log('[Booking] Creating appointment:', { patientId: patient.id, clinicId: bookingClinic, date: timestamp });
 
       await pgAppointments.create({
@@ -120,7 +136,9 @@ const PatientDashboardView: React.FC = () => {
       setBookingSuccess(true);
       // Refresh appointments using optimized query
       const myApps = await pgAppointments.getByPatientId(patient.id);
-      const upcomingApps = myApps.filter(a => (a.status === 'scheduled' || a.status === 'pending') && a.date >= Date.now());
+      const upcomingApps = myApps.filter(a => 
+        (a.status === 'scheduled' || a.status === 'pending' || a.status === 'suggested') && (a.status === 'suggested' || a.date >= Date.now())
+      );
       setAppointments(upcomingApps.sort((a, b) => a.date - b.date));
 
       setTimeout(() => {

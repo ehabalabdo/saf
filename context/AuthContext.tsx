@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { User, Patient } from '../types';
 import { api } from '../src/api';
-import { pgUsers, pgPatients } from '../services/pgServices';
 import { getCurrentClientId } from './ClientContext';
 
 interface AuthContextType {
@@ -43,63 +42,115 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
 
   const login = async (identifier: string, password: string) => {
-    // Get current client ID for multi-tenant filtering
     const clientId = getCurrentClientId();
     
-    // Try staff login first (search by name OR email)
-    const allUsers = await pgUsers.getAll(clientId || undefined);
-    const foundUser = allUsers.find(
-      u => (u.name === identifier || u.email === identifier) && u.password === password
-    );
-    
-    if (foundUser) {
-      if (!foundUser.isActive) {
-        throw new Error('هذا الحساب غير مفعل');
+    try {
+      const result = await api.post('/auth/login', {
+        username: identifier,
+        password,
+        client_id: clientId || undefined,
+      });
+
+      // Store JWT token
+      if (result.token) {
+        localStorage.setItem('token', result.token);
       }
-      
-      // Verify user belongs to this client (if client context exists)
-      if (clientId && foundUser.clientId && foundUser.clientId !== clientId) {
-        throw new Error('هذا الحساب لا ينتمي لهذا المركز');
+
+      if (result.type === 'staff') {
+        const foundUser: User = {
+          uid: result.user.uid || String(result.user.id),
+          name: result.user.name || result.user.full_name,
+          email: result.user.email || '',
+          role: result.user.role,
+          clinicIds: result.user.clinicIds || [],
+          clientId: result.user.clientId || clientId || undefined,
+          isActive: result.user.isActive !== false,
+          createdAt: Date.now(),
+          createdBy: 'system',
+          updatedAt: Date.now(),
+          updatedBy: 'system',
+          isArchived: false,
+        };
+
+        if (!foundUser.isActive) {
+          throw new Error('هذا الحساب غير مفعل');
+        }
+        if (clientId && foundUser.clientId && foundUser.clientId !== clientId) {
+          throw new Error('هذا الحساب لا ينتمي لهذا المركز');
+        }
+
+        localStorage.setItem('user', JSON.stringify(foundUser));
+        setUser(foundUser);
+        return;
       }
-      
-      // Save user to localStorage
-      localStorage.setItem('user', JSON.stringify(foundUser));
-      setUser(foundUser);
-      return;
+
+      if (result.type === 'patient') {
+        const foundPatient: Partial<Patient> = {
+          id: result.patient.id || String(result.patient.patient_id),
+          name: result.patient.name || result.patient.full_name,
+          phone: result.patient.phone || '',
+          username: result.patient.username,
+          email: result.patient.email,
+          hasAccess: true,
+        };
+
+        localStorage.setItem('patientUser', JSON.stringify(foundPatient));
+        setPatientUser(foundPatient as Patient);
+        return;
+      }
+
+      throw new Error('بيانات تسجيل الدخول غير صحيحة');
+    } catch (error: any) {
+      // Re-throw with Arabic message if it's a credentials error
+      if (error.message?.includes('Invalid credentials') || error.message?.includes('401')) {
+        throw new Error('بيانات تسجيل الدخول غير صحيحة');
+      }
+      throw error;
     }
-    
-    // If not found in staff, try patient login
-    const foundPatient = await pgPatients.findByLogin(identifier, password, clientId || undefined);
-    
-    if (foundPatient) {
-      // Save patient to localStorage
-      localStorage.setItem('patientUser', JSON.stringify(foundPatient));
-      setPatientUser(foundPatient);
-      return;
-    }
-    
-    // Not found in either table
-    throw new Error('بيانات تسجيل الدخول غير صحيحة');
   };
 
   const patientLogin = async (username: string, password: string) => {
     const clientId = getCurrentClientId();
-    const foundPatient = await pgPatients.findByLogin(username, password, clientId || undefined);
     
-    if (!foundPatient) {
+    try {
+      const result = await api.post('/auth/login', {
+        username,
+        password,
+        client_id: clientId || undefined,
+      });
+
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+      }
+
+      if (result.type === 'patient') {
+        const foundPatient: Partial<Patient> = {
+          id: result.patient.id || String(result.patient.patient_id),
+          name: result.patient.name || result.patient.full_name,
+          phone: result.patient.phone || '',
+          username: result.patient.username,
+          email: result.patient.email,
+          hasAccess: true,
+        };
+
+        localStorage.setItem('patientUser', JSON.stringify(foundPatient));
+        setPatientUser(foundPatient as Patient);
+        return;
+      }
+
       throw new Error('رقم الهاتف أو كلمة المرور غير صحيحة');
+    } catch (error: any) {
+      if (error.message?.includes('Invalid credentials') || error.message?.includes('401')) {
+        throw new Error('رقم الهاتف أو كلمة المرور غير صحيحة');
+      }
+      throw error;
     }
-    
-    // Save patient to localStorage
-    localStorage.setItem('patientUser', JSON.stringify(foundPatient));
-    setPatientUser(foundPatient);
   };
 
   const logout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('patientUser');
-    // Keep currentClientSlug and currentClientId for re-login
     setUser(null);
     setPatientUser(null);
   };

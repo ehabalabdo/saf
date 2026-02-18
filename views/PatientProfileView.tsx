@@ -59,6 +59,8 @@ const PatientProfileView: React.FC = () => {
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.6);
+      // Close AudioContext after sound finishes to prevent memory leak
+      oscillator.onended = () => audioContext.close();
       
       // Show alert notification
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -115,8 +117,8 @@ const PatientProfileView: React.FC = () => {
         
         fetchData();
         
-        // Poll for updates every 2 seconds to catch status changes
-        const interval = setInterval(fetchData, 2000);
+        // Poll for updates every 10 seconds to catch status changes
+        const interval = setInterval(fetchData, 10000);
         
         return () => clearInterval(interval);
     }, [user, id]);

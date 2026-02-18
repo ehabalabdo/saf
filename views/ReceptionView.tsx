@@ -48,6 +48,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
 
   const loadData = async () => {
     if (!user) return;
+    try {
     const [allApps, activeClinics, notifs, allInvoices, allSessions] = await Promise.all([
         AppointmentService.getAll(user),
         ClinicService.getActive(),
@@ -86,32 +87,18 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
     setInvoices(allInvoices.filter(i => i.status !== 'paid')); // Show unpaid
     
     if (patientClinics.length > 0 && !formData.clinicId) setFormData(prev => ({ ...prev, clinicId: patientClinics[0].id }));
+    } catch (err) {
+      console.error('[ReceptionView] Failed to load data:', err);
+    }
   };
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Polling for appointments/notifs
+    const interval = setInterval(loadData, 30000); // Polling for appointments/notifs/invoices
     return () => clearInterval(interval);
   }, [user]);
 
-  // Faster polling for invoices (every 5 seconds) to catch new invoices from doctor
-  useEffect(() => {
-    if (!user) return;
-    
-    const loadInvoices = async () => {
-      try {
-        const allInvoices = await BillingService.getAll(user);
-        setInvoices(allInvoices.filter(i => i.status !== 'paid'));
-        console.log('[ReceptionView] Loaded invoices:', allInvoices.length);
-      } catch (e) {
-        console.error('[ReceptionView] Failed to load invoices:', e);
-      }
-    };
-    
-    loadInvoices(); // Load immediately
-    const interval = setInterval(loadInvoices, 5000); // Then every 5 seconds
-    return () => clearInterval(interval);
-  }, [user]);
+  // Duplicate invoice polling removed — loadData already fetches invoices every 30s
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -142,6 +129,8 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
             
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.4);
+            // Close AudioContext after sound finishes to prevent memory leak
+            oscillator.onended = () => audioContext.close();
         } catch (e) {
             console.log('Audio notification not supported');
         }
@@ -227,7 +216,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
             await PatientService.add(user, {
                 name: formData.name,
                 dateOfBirth: formData.dateOfBirth || undefined,
-                age: formData.dateOfBirth ? 0 : 0,
+                age: 0, // age will be calculated from dateOfBirth in pgServices
                 phone: formData.phone,
                 username: formData.phone, // رقم الهاتف هو username
                 email: undefined,

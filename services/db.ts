@@ -1,6 +1,15 @@
 import { neon } from '@neondatabase/serverless';
 
 // Neon serverless SQL - works in browser via HTTP
-const sql = neon(process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_6nJUYTxI9yXP@ep-empty-boat-ag13jwix-pooler.c-2.eu-central-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require');
+// Database URL must be set via environment variable (VITE_DATABASE_URL for frontend, DATABASE_URL for server)
+const dbUrl = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DATABASE_URL)
+  || (typeof process !== 'undefined' && process.env?.DATABASE_URL)
+  || '';
+
+if (!dbUrl) {
+  console.error('[db] WARNING: No DATABASE_URL configured. Database operations will fail.');
+}
+
+const sql = neon(dbUrl);
 
 export default sql;

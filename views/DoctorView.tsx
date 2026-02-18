@@ -38,6 +38,12 @@ const DoctorView: React.FC = () => {
   
   // Track previous count for doctor notifications
   const prevWaitingCountRef = useRef(0);
+  const selectedPatientRef = useRef<Patient | null>(null);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedPatientRef.current = selectedPatient;
+  }, [selectedPatient]);
 
   const handleSelectPatient = async (p: Patient) => {
     // أول ما الدكتور يختار المريض، يصير in-progress فوراً
@@ -107,10 +113,11 @@ const DoctorView: React.FC = () => {
       prevWaitingCountRef.current = waitingCount;
       setPatients(data);
       
-      // Real-time update for selected patient
-      if (selectedPatient) {
-        const updated = data.find(p => p.id === selectedPatient.id);
-        if (updated && updated.currentVisit.status !== selectedPatient.currentVisit.status) {
+      // Real-time update for selected patient (use ref to avoid stale closure)
+      const currentSelected = selectedPatientRef.current;
+      if (currentSelected) {
+        const updated = data.find(p => p.id === currentSelected.id);
+        if (updated && updated.currentVisit.status !== currentSelected.currentVisit.status) {
           setSelectedPatient(updated);
         }
       }
@@ -132,7 +139,7 @@ const DoctorView: React.FC = () => {
         };
         loadData();
     return () => unsubscribeQueue();
-  }, [user, selectedPatient?.id]); // Removed completedPatientIds from deps to avoid infinite loop
+  }, [user]); // Only re-subscribe when user changes
 
   useEffect(() => {
     if (selectedPatient) {
