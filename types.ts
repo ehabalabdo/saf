@@ -398,3 +398,92 @@ export interface AuthState {
   user: User | null;
   isLoading: boolean;
 }
+
+// =============================================
+// HR Module Types
+// =============================================
+
+export type HrEmployeeStatus = 'active' | 'inactive';
+export type AttendanceStatus = 'normal' | 'late' | 'absent' | 'weekend' | 'incomplete';
+
+export interface HrSchedule {
+  workDays: number[];       // 1=Mon … 7=Sun
+  startTime: string;        // "HH:MM"
+  endTime: string;          // "HH:MM"
+  graceMinutes: number;
+  overtimeEnabled: boolean;
+}
+
+export interface HrEmployee {
+  id: number;
+  clientId: number;
+  fullName: string;
+  username: string;
+  phone?: string;
+  email?: string;
+  status: HrEmployeeStatus;
+  bioRegistered: boolean;
+  schedule: HrSchedule | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HrAttendanceRecord {
+  id: number;
+  employeeId: number;
+  employeeName?: string;
+  workDate: string;          // YYYY-MM-DD
+  checkIn: string | null;
+  checkOut: string | null;
+  totalMinutes: number;
+  lateMinutes: number;
+  earlyLeaveMinutes: number;
+  overtimeMinutes: number;
+  status: AttendanceStatus;
+}
+
+export interface HrTodayAttendance {
+  checkIn: string | null;
+  checkOut: string | null;
+  totalMinutes: number;
+  lateMinutes: number;
+  overtimeMinutes: number;
+  status: AttendanceStatus;
+}
+
+export interface HrMeProfile {
+  id: number;
+  fullName: string;
+  username: string;
+  phone?: string;
+  email?: string;
+  status: HrEmployeeStatus;
+  bioRegistered: boolean;
+  bioCount: number;
+  schedule: HrSchedule | null;
+  todayAttendance: HrTodayAttendance | null;
+}
+
+export interface HrMonthlyReport {
+  month: string;
+  employeeId: number;
+  summary: {
+    daysPresent: number;
+    totalWorkMinutes: number;
+    totalLateMinutes: number;
+    totalOvertimeMinutes: number;
+    totalEarlyLeaveMinutes: number;
+    totalAbsences: number;
+    totalLateDays: number;
+    totalEarlyLeaveDays: number;
+  };
+  days: HrAttendanceRecord[];
+}
+
+export interface ClinicLocation {
+  id: number;
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+  allowed_radius_meters: number;
+}
