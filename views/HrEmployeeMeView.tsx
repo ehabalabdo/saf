@@ -41,11 +41,18 @@ const HrEmployeeMeView: React.FC = () => {
   // Per-device registration tracking
   const [deviceRegistered, setDeviceRegistered] = useState<boolean>(false);
 
-  // Check if THIS device has registered
+  // Check if THIS device has registered — sync with server state
   useEffect(() => {
     const flag = localStorage.getItem('hr_bio_device');
     setDeviceRegistered(flag === 'yes');
   }, []);
+  // If server says no bio registered, clear local flag too
+  useEffect(() => {
+    if (profile && !profile.bioRegistered) {
+      localStorage.removeItem('hr_bio_device');
+      setDeviceRegistered(false);
+    }
+  }, [profile]);
 
   // ── Detect WebAuthn + platform authenticator on mount ──
   useEffect(() => {
