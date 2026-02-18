@@ -156,11 +156,15 @@ const HrEmployeeMeView: React.FC = () => {
       if (result.verified && result.bioToken) {
         return result.bioToken;
       }
+      setMsg({ text: isAr ? 'فشل التحقق من البصمة (سيرفر)' : 'Biometric verify failed (server)', type: 'err' });
       return null;
     } catch (e: any) {
       console.error('Bio auth failed:', e);
+      const errMsg = e?.message || e?.error || (isAr ? 'خطأ في البصمة' : 'Biometric error');
       if (e?.name === 'NotAllowedError') {
         setMsg({ text: isAr ? 'تم إلغاء عملية البصمة' : 'Biometric cancelled by user', type: 'err' });
+      } else {
+        setMsg({ text: errMsg, type: 'err' });
       }
       return null;
     }
