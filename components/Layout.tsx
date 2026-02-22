@@ -136,6 +136,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                    <div className="px-4 pb-2 mt-6 text-xs font-bold uppercase text-slate-600 tracking-wider">HR</div>
                    <NavItem to="/hr/employees" icon="fa-solid fa-id-badge" label={language === 'ar' ? 'إدارة الموظفين' : 'HR Employees'} />
                    <NavItem to="/hr/attendance" icon="fa-solid fa-fingerprint" label={language === 'ar' ? 'سجل الحضور' : 'Attendance'} />
+                   <NavItem to="/hr/payroll" icon="fa-solid fa-money-check-dollar" label={language === 'ar' ? 'الرواتب' : 'Payroll'} />
+                   <NavItem to="/hr/actions" icon="fa-solid fa-gavel" label={language === 'ar' ? 'إجراءات إدارية' : 'Actions'} />
                    <NavItem to="/hr/reports" icon="fa-solid fa-chart-column" label={language === 'ar' ? 'تقارير HR' : 'HR Reports'} />
                </>
            )}

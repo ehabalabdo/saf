@@ -28,6 +28,8 @@ import HrEmployeesView from './views/HrEmployeesView';
 import HrAttendanceView from './views/HrAttendanceView';
 import HrReportsView from './views/HrReportsView';
 import HrEmployeeMeView from './views/HrEmployeeMeView';
+import HrPayrollView from './views/HrPayrollView';
+import HrManagerActionsView from './views/HrManagerActionsView';
 import CatalogView from './views/CatalogView';
 // HrLoginView removed — HR login integrated into main LoginView
 import DevModeSwitcher from './components/DevModeSwitcher';
@@ -287,6 +289,8 @@ const ClientSlugRoutes: React.FC = () => {
           <Route path="/hr/employees" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><HrEmployeesView /></ProtectedRoute>} />
           <Route path="/hr/attendance" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><HrAttendanceView /></ProtectedRoute>} />
           <Route path="/hr/reports" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><HrReportsView /></ProtectedRoute>} />
+          <Route path="/hr/payroll" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><HrPayrollView /></ProtectedRoute>} />
+          <Route path="/hr/actions" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><HrManagerActionsView /></ProtectedRoute>} />
           
           {/* HR Employee Portal */}
           <Route path="/hr/me" element={<HrEmployeeGuard><HrEmployeeMeView /></HrEmployeeGuard>} />

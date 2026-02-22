@@ -459,8 +459,13 @@ export interface AuthState {
 // HR Module Types
 // =============================================
 
-export type HrEmployeeStatus = 'active' | 'inactive';
+export type HrEmployeeStatus = 'active' | 'inactive' | 'disabled';
 export type AttendanceStatus = 'normal' | 'late' | 'absent' | 'weekend' | 'incomplete';
+export type HrRole = 'HR_ADMIN' | 'HR_EMPLOYEE';
+export type AttendanceEventType = 'check_in' | 'break_out' | 'break_in' | 'check_out';
+export type PayslipStatus = 'draft' | 'approved' | 'rejected';
+export type PayrollRunStatus = 'draft' | 'closed';
+export type WarningLevel = 'verbal' | 'written' | 'final';
 
 export interface HrSchedule {
   workDays: number[];       // 1=Mon … 7=Sun
@@ -478,6 +483,8 @@ export interface HrEmployee {
   phone?: string;
   email?: string;
   status: HrEmployeeStatus;
+  role: HrRole;
+  basicSalary: number;
   bioRegistered: boolean;
   schedule: HrSchedule | null;
   createdAt: string;
@@ -492,19 +499,37 @@ export interface HrAttendanceRecord {
   checkIn: string | null;
   checkOut: string | null;
   totalMinutes: number;
+  totalBreakMinutes: number;
+  netWorkMinutes: number;
   lateMinutes: number;
   earlyLeaveMinutes: number;
   overtimeMinutes: number;
   status: AttendanceStatus;
+  events?: HrAttendanceEvent[];
+}
+
+export interface HrAttendanceEvent {
+  id: number;
+  employeeId: number;
+  workDate: string;
+  eventType: AttendanceEventType;
+  eventTime: string;
+  latitude?: number;
+  longitude?: number;
+  deviceInfo?: any;
 }
 
 export interface HrTodayAttendance {
   checkIn: string | null;
   checkOut: string | null;
   totalMinutes: number;
+  totalBreakMinutes: number;
+  netWorkMinutes: number;
   lateMinutes: number;
   overtimeMinutes: number;
   status: AttendanceStatus;
+  onBreak: boolean;
+  events: HrAttendanceEvent[];
 }
 
 export interface HrMeProfile {
@@ -514,6 +539,7 @@ export interface HrMeProfile {
   phone?: string;
   email?: string;
   status: HrEmployeeStatus;
+  role: HrRole;
   bioRegistered: boolean;
   bioCount: number;
   schedule: HrSchedule | null;
@@ -542,6 +568,107 @@ export interface ClinicLocation {
   latitude: number | null;
   longitude: number | null;
   allowed_radius_meters: number;
+}
+
+// =============================================
+// HR Payroll Types
+// =============================================
+
+export interface HrSocialSecuritySettings {
+  id: number;
+  clientId: number;
+  employeeRatePercent: number;
+  employerRatePercent: number;
+  enabled: boolean;
+}
+
+export interface HrPayrollRun {
+  id: number;
+  clientId: number;
+  month: string;            // YYYY-MM-01
+  status: PayrollRunStatus;
+  createdBy?: number;
+  createdAt: string;
+  payslips?: HrPayslip[];
+}
+
+export interface HrPayslip {
+  id: number;
+  clientId: number;
+  payrollRunId: number;
+  employeeId: number;
+  employeeName?: string;
+  month: string;
+
+  basicSalary: number;
+  employeeSs: number;
+  employerSs: number;
+
+  suggestedLateMinutes: number;
+  suggestedLateAmount: number;
+  finalLateAmount: number;
+  lateThresholdExceeded: boolean;
+
+  suggestedOvertimeMinutes: number;
+  overtimeMultiplier: number;
+  suggestedOvertimeAmount: number;
+  finalOvertimeAmount: number;
+
+  suggestedAbsentDays: number;
+  suggestedAbsenceAmount: number;
+  finalAbsenceAmount: number;
+
+  totalBreakMinutes: number;
+  manualDeductionsTotal: number;
+  netSalary: number;
+
+  daysWorked: number;
+  totalWorkMinutes: number;
+
+  status: PayslipStatus;
+  rejectReason?: string;
+  approvedBy?: number;
+  approvedAt?: string;
+
+  pdfUrl?: string;
+  pdfGeneratedAt?: string;
+  createdAt: string;
+}
+
+export interface HrDeduction {
+  id: number;
+  clientId: number;
+  employeeId: number;
+  employeeName?: string;
+  month: string;
+  amount: number;
+  reason?: string;
+  createdBy?: number;
+  createdByName?: string;
+  createdAt: string;
+}
+
+export interface HrWarning {
+  id: number;
+  clientId: number;
+  employeeId: number;
+  employeeName?: string;
+  level: WarningLevel;
+  reason?: string;
+  issuedBy?: number;
+  issuedByName?: string;
+  issuedAt: string;
+}
+
+export interface HrNotification {
+  id: number;
+  clientId: number;
+  employeeId: number;
+  message: string;
+  isRead: boolean;
+  createdBy?: number;
+  createdByName?: string;
+  createdAt: string;
 }
 
 // ===================== CATALOG =====================

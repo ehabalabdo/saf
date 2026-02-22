@@ -282,10 +282,57 @@ const HrEmployeeMeView: React.FC = () => {
     }
   };
 
+  // ── Break Out ──
+  const handleBreakOut = async () => {
+    setActionLoading(true);
+    setMsg(null);
+    try {
+      const coords = await getGps();
+      const bioToken = await authenticateBio();
+      if (!bioToken) { setActionLoading(false); return; }
+      const result = await hrAttendanceService.breakOut({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        bioToken,
+        device_info: navigator.userAgent.slice(0, 120),
+      });
+      setMsg({ text: result.message, type: 'ok' });
+      refresh();
+    } catch (e: any) {
+      setMsg({ text: e?.message || (isAr ? 'خطأ في بدء الاستراحة' : 'Break out error'), type: 'err' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ── Break In ──
+  const handleBreakIn = async () => {
+    setActionLoading(true);
+    setMsg(null);
+    try {
+      const coords = await getGps();
+      const bioToken = await authenticateBio();
+      if (!bioToken) { setActionLoading(false); return; }
+      const result = await hrAttendanceService.breakIn({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        bioToken,
+        device_info: navigator.userAgent.slice(0, 120),
+      });
+      setMsg({ text: `${result.message} — ${result.breakMinutes}m`, type: 'ok' });
+      refresh();
+    } catch (e: any) {
+      setMsg({ text: e?.message || (isAr ? 'خطأ في إنهاء الاستراحة' : 'Break in error'), type: 'err' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // ── derived state ──
   const today = profile?.todayAttendance;
   const checkedIn = !!today?.checkIn;
   const checkedOut = !!today?.checkOut;
+  const onBreak = !!(today as any)?.onBreak;
   const sched = profile?.schedule;
   const summary = monthlyReport?.summary;
 
@@ -533,9 +580,9 @@ const HrEmployeeMeView: React.FC = () => {
               {/* Check Out */}
               <button
                 onClick={handleCheckOut}
-                disabled={actionLoading || !checkedIn || checkedOut}
+                disabled={actionLoading || !checkedIn || checkedOut || onBreak}
                 className={`p-6 rounded-2xl font-extrabold text-lg transition-all flex flex-col items-center gap-2 ${
-                  !checkedIn || checkedOut
+                  !checkedIn || checkedOut || onBreak
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     : 'bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg shadow-red-200 active:scale-95'
                 }`}
@@ -554,7 +601,43 @@ const HrEmployeeMeView: React.FC = () => {
                   <span className="text-xs font-medium">{fmtTime(today.checkOut)}</span>
                 )}
               </button>
+
+              {/* Break Out (Start Break) */}
+              <button
+                onClick={handleBreakOut}
+                disabled={actionLoading || !checkedIn || checkedOut || onBreak || !deviceRegistered}
+                className={`p-6 rounded-2xl font-extrabold text-lg transition-all flex flex-col items-center gap-2 ${
+                  !checkedIn || checkedOut || onBreak || !deviceRegistered
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-br from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-lg shadow-amber-200 active:scale-95'
+                }`}
+              >
+                <i className="fa-solid fa-mug-hot text-3xl"></i>
+                <span>{isAr ? 'بدء استراحة' : 'Start Break'}</span>
+              </button>
+
+              {/* Break In (End Break) */}
+              <button
+                onClick={handleBreakIn}
+                disabled={actionLoading || !onBreak}
+                className={`p-6 rounded-2xl font-extrabold text-lg transition-all flex flex-col items-center gap-2 ${
+                  !onBreak
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700 shadow-lg shadow-teal-200 active:scale-95 animate-pulse'
+                }`}
+              >
+                <i className="fa-solid fa-person-running text-3xl"></i>
+                <span>{isAr ? 'إنهاء استراحة' : 'End Break'}</span>
+              </button>
             </div>
+
+            {/* On Break Indicator */}
+            {onBreak && (
+              <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-center animate-pulse">
+                <i className="fa-solid fa-mug-hot text-3xl text-amber-500 mb-2"></i>
+                <p className="text-amber-700 font-extrabold">{isAr ? 'أنت في استراحة حالياً' : 'You are currently on break'}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -584,6 +667,12 @@ const HrEmployeeMeView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-amber-500 text-sm">{isAr ? 'تأخير' : 'Late'}</span>
                     <span className="font-bold text-amber-600">{today.lateMinutes}m</span>
+                  </div>
+                )}
+                {(today as any).totalBreakMinutes > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-orange-500 text-sm">{isAr ? 'استراحات' : 'Breaks'}</span>
+                    <span className="font-bold text-orange-600">{(today as any).totalBreakMinutes}m</span>
                   </div>
                 )}
                 {today.overtimeMinutes > 0 && (

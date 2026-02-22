@@ -27,6 +27,8 @@ interface EmployeeFormData {
   password: string;
   phone: string;
   email: string;
+  basic_salary: number;
+  role: 'HR_ADMIN' | 'HR_EMPLOYEE';
   work_days: number[];
   start_time: string;
   end_time: string;
@@ -40,6 +42,8 @@ const defaultForm: EmployeeFormData = {
   password: generatePassword(),
   phone: '',
   email: '',
+  basic_salary: 0,
+  role: 'HR_EMPLOYEE',
   work_days: [1, 2, 3, 4, 5],
   start_time: '09:00',
   end_time: '17:00',
@@ -99,6 +103,8 @@ const HrEmployeesView: React.FC = () => {
       password: '',
       phone: emp.phone || '',
       email: emp.email || '',
+      basic_salary: (emp as any).basicSalary || 0,
+      role: (emp as any).role || 'HR_EMPLOYEE',
       work_days: emp.schedule?.workDays || [1, 2, 3, 4, 5],
       start_time: emp.schedule?.startTime?.slice(0, 5) || '09:00',
       end_time: emp.schedule?.endTime?.slice(0, 5) || '17:00',
@@ -126,12 +132,14 @@ const HrEmployeesView: React.FC = () => {
           full_name: form.full_name,
           phone: form.phone || undefined,
           email: form.email || undefined,
+          basic_salary: form.basic_salary,
+          role: form.role,
           work_days: form.work_days,
           start_time: form.start_time,
           end_time: form.end_time,
           grace_minutes: form.grace_minutes,
           overtime_enabled: form.overtime_enabled,
-        });
+        } as any);
       } else {
         await hrEmployeesService.create({
           full_name: form.full_name,
@@ -139,12 +147,14 @@ const HrEmployeesView: React.FC = () => {
           password: form.password,
           phone: form.phone || undefined,
           email: form.email || undefined,
+          basic_salary: form.basic_salary,
+          role: form.role,
           work_days: form.work_days,
           start_time: form.start_time,
           end_time: form.end_time,
           grace_minutes: form.grace_minutes,
           overtime_enabled: form.overtime_enabled,
-        });
+        } as any);
       }
       setShowForm(false);
       await fetchData();
@@ -274,6 +284,7 @@ const HrEmployeesView: React.FC = () => {
                   <th className="px-4 py-3 text-start">{isAr ? 'اسم المستخدم' : 'Username'}</th>
                   <th className="px-4 py-3 text-center">{isAr ? 'الحالة' : 'Status'}</th>
                   <th className="px-4 py-3 text-center">{isAr ? 'البصمة' : 'Bio'}</th>
+                  <th className="px-4 py-3 text-center">{isAr ? 'الراتب' : 'Salary'}</th>
                   <th className="px-4 py-3 text-start">{isAr ? 'الدوام' : 'Schedule'}</th>
                   <th className="px-4 py-3 text-center">{isAr ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
@@ -297,6 +308,9 @@ const HrEmployeesView: React.FC = () => {
                       ) : (
                         <i className="fa-solid fa-fingerprint text-slate-300"></i>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-center font-mono text-sm font-bold text-slate-700">
+                      {((emp as any).basicSalary || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
                       {emp.schedule ? (
@@ -412,6 +426,20 @@ const HrEmployeesView: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{isAr ? 'الإيميل' : 'Email'}</label>
                   <input type="email" className="w-full p-3 rounded-xl border border-gray-200 focus:border-indigo-400 outline-none" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{isAr ? 'الراتب الأساسي (JOD)' : 'Basic Salary (JOD)'}</label>
+                  <input type="number" step="0.01" min="0" className="w-full p-3 rounded-xl border border-gray-200 focus:border-indigo-400 outline-none" value={form.basic_salary} onChange={e => setForm({ ...form, basic_salary: parseFloat(e.target.value) || 0 })} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{isAr ? 'الصلاحية' : 'Role'}</label>
+                  <select className="w-full p-3 rounded-xl border border-gray-200 focus:border-indigo-400 outline-none" value={form.role} onChange={e => setForm({ ...form, role: e.target.value as any })}>
+                    <option value="HR_EMPLOYEE">{isAr ? 'موظف' : 'Employee'}</option>
+                    <option value="HR_ADMIN">{isAr ? 'مسؤول HR' : 'HR Admin'}</option>
+                  </select>
                 </div>
               </div>
 

@@ -2,9 +2,16 @@ import { api } from '../src/api';
 import {
   HrEmployee,
   HrAttendanceRecord,
+  HrAttendanceEvent,
   HrMeProfile,
   HrMonthlyReport,
   ClinicLocation,
+  HrPayrollRun,
+  HrPayslip,
+  HrDeduction,
+  HrWarning,
+  HrNotification,
+  HrSocialSecuritySettings,
 } from '../types';
 
 /**
@@ -212,6 +219,24 @@ export const hrAttendanceService = {
     return await api.post('/hr/attendance/check-out', data);
   },
 
+  breakOut: async (data: {
+    latitude: number;
+    longitude: number;
+    bioToken: string;
+    device_info?: string;
+  }): Promise<{ message: string; time: string }> => {
+    return await api.post('/hr/attendance/break-out', data);
+  },
+
+  breakIn: async (data: {
+    latitude: number;
+    longitude: number;
+    bioToken: string;
+    device_info?: string;
+  }): Promise<{ message: string; time: string; breakMinutes: number }> => {
+    return await api.post('/hr/attendance/break-in', data);
+  },
+
   getAll: async (params: {
     from?: string;
     to?: string;
@@ -226,6 +251,10 @@ export const hrAttendanceService = {
     const q = qs.toString();
     return (await api.get(`/hr/attendance${q ? '?' + q : ''}`)) || [];
   },
+
+  getTimeline: async (employeeId: number, date: string): Promise<HrAttendanceEvent[]> => {
+    return (await api.get(`/hr/attendance/${employeeId}/${date}`)) || [];
+  },
 };
 
 // ==================== REPORTS ====================
@@ -237,5 +266,132 @@ export const hrReportsService = {
 
   myMonthly: async (month: string): Promise<HrMonthlyReport> => {
     return await api.get(`/hr/reports/my-monthly?month=${month}`);
+  },
+};
+
+// ==================== SOCIAL SECURITY SETTINGS ====================
+
+export const hrSocialSecurityService = {
+  get: async (): Promise<HrSocialSecuritySettings> => {
+    return await api.get('/hr/social-security');
+  },
+  update: async (data: {
+    employee_rate_percent: number;
+    employer_rate_percent: number;
+    enabled: boolean;
+  }): Promise<HrSocialSecuritySettings> => {
+    return await apiPatch('/hr/social-security', data);
+  },
+};
+
+// ==================== PAYROLL ====================
+
+export const hrPayrollService = {
+  generate: async (month: string): Promise<HrPayrollRun> => {
+    return await api.post(`/hr/payroll/generate?month=${month}`, {});
+  },
+
+  getRun: async (month: string): Promise<HrPayrollRun & { payslips: HrPayslip[] }> => {
+    return await api.get(`/hr/payroll/run?month=${month}`);
+  },
+
+  getPayslip: async (id: number): Promise<HrPayslip> => {
+    return await api.get(`/hr/payroll/payslip/${id}`);
+  },
+
+  updatePayslip: async (id: number, data: {
+    final_late_amount?: number;
+    final_absence_amount?: number;
+    final_overtime_amount?: number;
+    overtime_multiplier?: number;
+  }): Promise<HrPayslip> => {
+    return await apiPatch(`/hr/payroll/payslip/${id}`, data);
+  },
+
+  approvePayslip: async (id: number): Promise<HrPayslip> => {
+    return await api.post(`/hr/payroll/payslip/${id}/approve`, {});
+  },
+
+  rejectPayslip: async (id: number, reason: string): Promise<HrPayslip> => {
+    return await api.post(`/hr/payroll/payslip/${id}/reject`, { reason });
+  },
+
+  closeMonth: async (month: string): Promise<HrPayrollRun> => {
+    return await api.post(`/hr/payroll/close?month=${month}`, {});
+  },
+
+  downloadPdf: (id: number): string => {
+    const token = localStorage.getItem('token');
+    return `https://medloop-api.onrender.com/hr/payroll/payslip/${id}/pdf?token=${token}`;
+  },
+};
+
+// ==================== DEDUCTIONS (Manager-entered) ====================
+
+export const hrDeductionsService = {
+  getAll: async (params: { month?: string; employee_id?: number }): Promise<HrDeduction[]> => {
+    const qs = new URLSearchParams();
+    if (params.month) qs.set('month', params.month);
+    if (params.employee_id) qs.set('employee_id', String(params.employee_id));
+    const q = qs.toString();
+    return (await api.get(`/hr/deductions${q ? '?' + q : ''}`)) || [];
+  },
+
+  create: async (data: {
+    employee_id: number;
+    month: string;
+    amount: number;
+    reason?: string;
+  }): Promise<HrDeduction> => {
+    return await api.post('/hr/deductions', data);
+  },
+
+  remove: async (id: number): Promise<void> => {
+    await api.del(`/hr/deductions/${id}`);
+  },
+};
+
+// ==================== WARNINGS (Manager-entered) ====================
+
+export const hrWarningsService = {
+  getAll: async (params: { employee_id?: number }): Promise<HrWarning[]> => {
+    const qs = new URLSearchParams();
+    if (params.employee_id) qs.set('employee_id', String(params.employee_id));
+    const q = qs.toString();
+    return (await api.get(`/hr/warnings${q ? '?' + q : ''}`)) || [];
+  },
+
+  create: async (data: {
+    employee_id: number;
+    level: string;
+    reason?: string;
+  }): Promise<HrWarning> => {
+    return await api.post('/hr/warnings', data);
+  },
+};
+
+// ==================== NOTIFICATIONS (Manager → Employee) ====================
+
+export const hrNotificationsService = {
+  getAll: async (params: { employee_id?: number }): Promise<HrNotification[]> => {
+    const qs = new URLSearchParams();
+    if (params.employee_id) qs.set('employee_id', String(params.employee_id));
+    const q = qs.toString();
+    return (await api.get(`/hr/notifications${q ? '?' + q : ''}`)) || [];
+  },
+
+  create: async (data: {
+    employee_id: number;
+    message: string;
+  }): Promise<HrNotification> => {
+    return await api.post('/hr/notifications', data);
+  },
+
+  getMyNotifications: async (): Promise<HrNotification[]> => {
+    return (await api.get('/hr/notifications/me')) || [];
+  },
+
+  markRead: async (id: number): Promise<void> => {
+    await apiPatch(`/hr/notifications/${id}/read`, {});
   },
 };
