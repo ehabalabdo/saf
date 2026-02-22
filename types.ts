@@ -543,3 +543,41 @@ export interface ClinicLocation {
   longitude: number | null;
   allowed_radius_meters: number;
 }
+
+// ===================== CATALOG =====================
+
+export interface CatalogService {
+  id: string;
+  serviceName: string;
+  category: string;
+  price: number;
+  currency: string;
+  active: boolean;
+  clientId: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CatalogMedication {
+  id: string;
+  brandName: string;
+  genericName: string;
+  strength: string;
+  dosageForm: string;
+  route: string;
+  defaultDose: string;
+  defaultFrequency: string;
+  defaultDuration: string;
+  notes: string;
+  active: boolean;
+  clientId: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  failed: number;
+  errors: { row: number; message: string }[];
+}

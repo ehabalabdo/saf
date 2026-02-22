@@ -707,3 +707,42 @@ export const pgDeviceResults = {
     return result?.count || 0;
   }
 };
+
+// ===================== CATALOG API =====================
+import type { CatalogService, CatalogMedication, ImportResult } from '../types';
+
+export const pgCatalogServices = {
+  getAll: async (): Promise<CatalogService[]> => {
+    return await api.get('/catalog/services') || [];
+  },
+  create: async (data: Partial<CatalogService>): Promise<CatalogService> => {
+    return await api.post('/catalog/services', data);
+  },
+  update: async (id: string, data: Partial<CatalogService>): Promise<CatalogService> => {
+    return await api.put(`/catalog/services/${id}`, data);
+  },
+  remove: async (id: string): Promise<void> => {
+    await api.del(`/catalog/services/${id}`);
+  },
+  importBulk: async (rows: Partial<CatalogService>[]): Promise<ImportResult> => {
+    return await api.post('/catalog/services/import', { rows });
+  },
+};
+
+export const pgCatalogMedications = {
+  getAll: async (): Promise<CatalogMedication[]> => {
+    return await api.get('/catalog/medications') || [];
+  },
+  create: async (data: Partial<CatalogMedication>): Promise<CatalogMedication> => {
+    return await api.post('/catalog/medications', data);
+  },
+  update: async (id: string, data: Partial<CatalogMedication>): Promise<CatalogMedication> => {
+    return await api.put(`/catalog/medications/${id}`, data);
+  },
+  remove: async (id: string): Promise<void> => {
+    await api.del(`/catalog/medications/${id}`);
+  },
+  importBulk: async (rows: Partial<CatalogMedication>[]): Promise<ImportResult> => {
+    return await api.post('/catalog/medications/import', { rows });
+  },
+};

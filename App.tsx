@@ -28,6 +28,7 @@ import HrEmployeesView from './views/HrEmployeesView';
 import HrAttendanceView from './views/HrAttendanceView';
 import HrReportsView from './views/HrReportsView';
 import HrEmployeeMeView from './views/HrEmployeeMeView';
+import CatalogView from './views/CatalogView';
 // HrLoginView removed — HR login integrated into main LoginView
 import DevModeSwitcher from './components/DevModeSwitcher';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -279,6 +280,7 @@ const ClientSlugRoutes: React.FC = () => {
           <Route path="/clinic-history" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.DOCTOR]}><ClinicHistoryView /></ProtectedRoute>} />
           <Route path="/device-results" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.SECRETARY, UserRole.DOCTOR]}><DeviceResultsView /></ProtectedRoute>} />
           <Route path="/device-management" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><DeviceManagementView /></ProtectedRoute>} />
+          <Route path="/catalog" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><CatalogView /></ProtectedRoute>} />
           <Route path="/queue-display" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.SECRETARY]}><QueueDisplayView /></ProtectedRoute>} />
           
           {/* HR Admin Routes (admin only) */}
