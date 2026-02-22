@@ -970,22 +970,20 @@ const DoctorView: React.FC = () => {
                             <div className="md:col-span-4 relative" ref={rxDropdownRef}>
                               <input 
                                 className="w-full p-2 rounded-lg border text-sm" 
-                                placeholder="Drug Name (type to search catalog)" 
+                                placeholder="Drug Name (type to search)" 
                                 value={newRx.name} 
-                                onChange={e => { setNewRx({...newRx, name: e.target.value}); setRxSearch(e.target.value); setRxDropdownOpen(true); }}
-                                onFocus={() => { if (newRx.name || catalogMedications.length > 0) setRxDropdownOpen(true); }}
+                                onChange={e => { setNewRx({...newRx, name: e.target.value}); setRxSearch(e.target.value); setRxDropdownOpen(e.target.value.length >= 1); }}
+                                onFocus={() => { if (rxSearch.length >= 1) setRxDropdownOpen(true); }}
                                 onBlur={() => setTimeout(() => setRxDropdownOpen(false), 200)}
                               />
-                              {rxDropdownOpen && catalogMedications.length > 0 && (
+                              {rxDropdownOpen && rxSearch.length >= 1 && catalogMedications.length > 0 && (() => {
+                                const q = rxSearch.toLowerCase();
+                                const filtered = catalogMedications.filter(m => 
+                                  (m.brandName || '').toLowerCase().startsWith(q) || (m.genericName || '').toLowerCase().startsWith(q)
+                                );
+                                return filtered.length > 0 ? (
                                 <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
-                                  {catalogMedications
-                                    .filter(m => {
-                                      const q = rxSearch.toLowerCase();
-                                      if (!q) return true;
-                                      return (m.brandName || '').toLowerCase().includes(q) || (m.genericName || '').toLowerCase().includes(q);
-                                    })
-                                    .slice(0, 20)
-                                    .map(m => (
+                                  {filtered.slice(0, 15).map(m => (
                                       <button
                                         key={m.id}
                                         type="button"
@@ -999,6 +997,7 @@ const DoctorView: React.FC = () => {
                                             freq: m.defaultFrequency || '',
                                             dur: m.defaultDuration || ''
                                           });
+                                          setRxSearch('');
                                           setRxDropdownOpen(false);
                                         }}
                                       >
@@ -1008,11 +1007,9 @@ const DoctorView: React.FC = () => {
                                       </button>
                                     ))
                                   }
-                                  {catalogMedications.filter(m => { const q = rxSearch.toLowerCase(); return !q || (m.brandName||'').toLowerCase().includes(q) || (m.genericName||'').toLowerCase().includes(q); }).length === 0 && (
-                                    <div className="px-3 py-2 text-xs text-slate-400 italic">No match — type to enter manually</div>
-                                  )}
                                 </div>
-                              )}
+                                ) : null;
+                              })()}
                             </div>
                             <div className="md:col-span-2"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Dose (500mg)" value={newRx.dose} onChange={e => setNewRx({...newRx, dose: e.target.value})} /></div>
                             <div className="md:col-span-2"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Frequency" value={newRx.freq} onChange={e => setNewRx({...newRx, freq: e.target.value})} /></div>
