@@ -320,9 +320,24 @@ export const hrPayrollService = {
     return await api.post(`/hr/payroll/close-month`, { month });
   },
 
-  downloadPdf: (id: number): string => {
+  downloadPdf: async (id: number, filename?: string): Promise<void> => {
     const token = localStorage.getItem('token');
-    return `https://medloop-api.onrender.com/hr/payslips/${id}/pdf?token=${token}`;
+    const res = await fetch(`https://medloop-api.onrender.com/hr/payslips/${id}/pdf`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Download failed' }));
+      throw new Error(err.error || 'Download failed');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename ? `${filename}.pdf` : `payslip-${id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   },
 };
 

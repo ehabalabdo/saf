@@ -166,6 +166,18 @@ const HrPayrollView: React.FC = () => {
     }
   };
 
+  const handleDownloadPdf = async (id: number, name: string) => {
+    try {
+      setActionLoading(true);
+      await hrPayrollService.downloadPdf(id, name);
+      setMsg({ text: isAr ? 'تم تحميل الملف' : 'PDF downloaded', type: 'ok' });
+    } catch (e: any) {
+      setMsg({ text: e?.message || 'PDF download failed', type: 'err' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Summary
   const payslips = run?.payslips || [];
   const draftCount = payslips.filter(p => p.status === 'draft').length;
@@ -372,10 +384,10 @@ const HrPayrollView: React.FC = () => {
             {/* PDF Download (only if approved) */}
             {selectedPayslip.status === 'approved' && (
               <div className="mt-4">
-                <a href={hrPayrollService.downloadPdf(selectedPayslip.id)} target="_blank" rel="noopener noreferrer"
+                <button onClick={() => handleDownloadPdf(selectedPayslip.id, selectedPayslip.employeeName || `payslip-${selectedPayslip.id}`)}
                   className="inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-sm transition">
                   <i className="fa-solid fa-file-pdf"></i> {isAr ? 'تحميل PDF' : 'Download PDF'}
-                </a>
+                </button>
               </div>
             )}
           </div>
