@@ -5,7 +5,8 @@ import { ClinicService, PatientService, AppointmentService, SettingsService } fr
 import { api } from '../src/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Patient, VisitData, Appointment, Gender, Priority, PrescriptionItem, Attachment, InvoiceItem, VitalSigns, LabOrder, ImagingOrder } from '../types';
+import { Patient, VisitData, Appointment, Gender, Priority, PrescriptionItem, Attachment, InvoiceItem, VitalSigns, LabOrder, ImagingOrder, CatalogService, CatalogMedication } from '../types';
+import { pgCatalogServices, pgCatalogMedications } from '../services/apiServices';
 import { jsPDF } from "jspdf";
 import DeviceResultsTimeline from '../components/DeviceResultsTimeline';
 
@@ -60,6 +61,17 @@ const DoctorView: React.FC = () => {
 
   // Prescription Input State
   const [newRx, setNewRx] = useState({ name: '', dose: '', freq: '', dur: '' });
+  const [rxSearch, setRxSearch] = useState('');
+  const [rxDropdownOpen, setRxDropdownOpen] = useState(false);
+
+  // Catalog data (loaded once)
+  const [catalogServices, setCatalogServices] = useState<CatalogService[]>([]);
+  const [catalogMedications, setCatalogMedications] = useState<CatalogMedication[]>([]);
+
+  // Billing custom service
+  const [customServiceName, setCustomServiceName] = useState('');
+  const [customServicePrice, setCustomServicePrice] = useState('');
+  const [serviceMode, setServiceMode] = useState<'catalog' | 'custom'>('catalog');
 
   // Lab & Imaging Input State
   const [newLab, setNewLab] = useState({ testName: '', notes: '' });
@@ -77,6 +89,7 @@ const DoctorView: React.FC = () => {
   // Track previous count for doctor notifications
   const prevWaitingCountRef = useRef(0);
   const selectedPatientRef = useRef<Patient | null>(null);
+  const rxDropdownRef = useRef<HTMLDivElement>(null);
   
   // Keep ref in sync with state
   useEffect(() => {
@@ -176,6 +189,20 @@ const DoctorView: React.FC = () => {
             }
         };
         loadData();
+
+    // Load catalog data for dropdowns
+    const loadCatalog = async () => {
+      try {
+        const [svcs, meds] = await Promise.all([
+          pgCatalogServices.getAll(),
+          pgCatalogMedications.getAll()
+        ]);
+        setCatalogServices(svcs.filter((s: CatalogService) => s.active));
+        setCatalogMedications(meds.filter((m: CatalogMedication) => m.active));
+      } catch (e) { console.warn('Catalog load failed, using manual entry only:', e); }
+    };
+    loadCatalog();
+
     return () => unsubscribeQueue();
   }, [user]); // Only re-subscribe when user changes
 
@@ -374,15 +401,21 @@ const DoctorView: React.FC = () => {
   };
 
   const addService = () => {
-      let price = 0;
-      switch(selectedService) {
-          case 'Consultation': price = 50; break;
-          case 'Follow-up': price = 25; break;
-          case 'Ultrasound': price = 80; break;
-          case 'Lab Test (Basic)': price = 40; break;
-          case 'X-Ray': price = 60; break;
-          case 'Minor Surgery': price = 150; break;
-          default: price = 0;
+      // Look up price from catalog first
+      const catalogMatch = catalogServices.find(s => s.serviceName === selectedService);
+      let price = catalogMatch ? Number(catalogMatch.price) : 0;
+      
+      // Fallback to hardcoded defaults if no catalog
+      if (!price) {
+        switch(selectedService) {
+            case 'Consultation': price = 50; break;
+            case 'Follow-up': price = 25; break;
+            case 'Ultrasound': price = 80; break;
+            case 'Lab Test (Basic)': price = 40; break;
+            case 'X-Ray': price = 60; break;
+            case 'Minor Surgery': price = 150; break;
+            default: price = 0;
+        }
       }
       const newItem: InvoiceItem = {
           id: Date.now().toString(),
@@ -934,20 +967,68 @@ const DoctorView: React.FC = () => {
                             )}
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4">
-                            <div className="md:col-span-4"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Drug Name" value={newRx.name} onChange={e => setNewRx({...newRx, name: e.target.value})} /></div>
-                            <div className="md:col-span-3"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Dose (500mg)" value={newRx.dose} onChange={e => setNewRx({...newRx, dose: e.target.value})} /></div>
-                            <div className="md:col-span-3"><select className="w-full p-2 rounded-lg border text-sm bg-white" value={newRx.freq} onChange={e => setNewRx({...newRx, freq: e.target.value})}><option value="">Freq</option><option value="1x1">1 x 1</option><option value="1x2">1 x 2</option><option value="1x3">1 x 3</option><option value="SOS">SOS</option></select></div>
+                            <div className="md:col-span-4 relative" ref={rxDropdownRef}>
+                              <input 
+                                className="w-full p-2 rounded-lg border text-sm" 
+                                placeholder="Drug Name (type to search catalog)" 
+                                value={newRx.name} 
+                                onChange={e => { setNewRx({...newRx, name: e.target.value}); setRxSearch(e.target.value); setRxDropdownOpen(true); }}
+                                onFocus={() => { if (newRx.name || catalogMedications.length > 0) setRxDropdownOpen(true); }}
+                                onBlur={() => setTimeout(() => setRxDropdownOpen(false), 200)}
+                              />
+                              {rxDropdownOpen && catalogMedications.length > 0 && (
+                                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                                  {catalogMedications
+                                    .filter(m => {
+                                      const q = rxSearch.toLowerCase();
+                                      if (!q) return true;
+                                      return (m.brandName || '').toLowerCase().includes(q) || (m.genericName || '').toLowerCase().includes(q);
+                                    })
+                                    .slice(0, 20)
+                                    .map(m => (
+                                      <button
+                                        key={m.id}
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-sm border-b border-slate-50 last:border-0 transition-colors"
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          const displayName = m.brandName ? `${m.brandName} (${m.genericName || ''})` : m.genericName || '';
+                                          setNewRx({
+                                            name: displayName.trim(),
+                                            dose: m.defaultDose || m.strength || '',
+                                            freq: m.defaultFrequency || '',
+                                            dur: m.defaultDuration || ''
+                                          });
+                                          setRxDropdownOpen(false);
+                                        }}
+                                      >
+                                        <div className="font-bold text-slate-800">{m.brandName || m.genericName}</div>
+                                        {m.brandName && m.genericName && <div className="text-xs text-slate-400 italic">{m.genericName}</div>}
+                                        <div className="text-xs text-slate-500">{[m.strength, m.dosageForm, m.route].filter(Boolean).join(' · ')}</div>
+                                      </button>
+                                    ))
+                                  }
+                                  {catalogMedications.filter(m => { const q = rxSearch.toLowerCase(); return !q || (m.brandName||'').toLowerCase().includes(q) || (m.genericName||'').toLowerCase().includes(q); }).length === 0 && (
+                                    <div className="px-3 py-2 text-xs text-slate-400 italic">No match — type to enter manually</div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="md:col-span-2"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Dose (500mg)" value={newRx.dose} onChange={e => setNewRx({...newRx, dose: e.target.value})} /></div>
+                            <div className="md:col-span-2"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Frequency" value={newRx.freq} onChange={e => setNewRx({...newRx, freq: e.target.value})} /></div>
+                            <div className="md:col-span-2"><input className="w-full p-2 rounded-lg border text-sm" placeholder="Duration" value={newRx.dur} onChange={e => setNewRx({...newRx, dur: e.target.value})} /></div>
                             <div className="md:col-span-2"><button onClick={addPrescription} className="w-full bg-slate-800 text-white rounded-lg h-full font-bold text-xs hover:bg-slate-700">ADD</button></div>
                           </div>
                           {prescriptions.length > 0 && (
                             <div className="space-y-2">
                               {prescriptions.map(p => (
                                 <div key={p.id} className="flex justify-between items-center bg-white p-2 rounded border border-gray-200 shadow-sm">
-                                  <div className="flex gap-2 text-sm font-bold text-slate-700">
+                                  <div className="flex gap-2 text-sm font-bold text-slate-700 flex-wrap">
                                     <span className="text-primary">{p.drugName}</span>
                                     <span className="text-slate-400">|</span>
                                     <span>{p.dosage}</span>
                                     <span className="bg-gray-100 px-1 rounded text-xs py-0.5">{p.frequency}</span>
+                                    {p.duration && <span className="bg-blue-50 px-1 rounded text-xs py-0.5 text-blue-600">{p.duration}</span>}
                                   </div>
                                   <button onClick={() => removePrescription(p.id)} className="text-rose-400 hover:text-rose-600"><i className="fa-solid fa-trash"></i></button>
                                 </div>
@@ -987,17 +1068,53 @@ const DoctorView: React.FC = () => {
                           <i className="fa-solid fa-file-invoice-dollar text-emerald-500"></i> Services & Billing
                         </h3>
                         <div className="bg-emerald-50/50 rounded-xl border border-emerald-100 p-4">
+                          {/* Mode toggle */}
                           <div className="flex gap-2 mb-3">
-                            <select className="flex-1 p-2 rounded-lg border text-sm bg-white" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
-                              <option value="Consultation">General Consultation (50 د.أ)</option>
-                              <option value="Follow-up">Follow-up Visit (25 د.أ)</option>
-                              <option value="Ultrasound">Ultrasound (80 د.أ)</option>
-                              <option value="Lab Test (Basic)">Lab Test - Basic (40 د.أ)</option>
-                              <option value="X-Ray">X-Ray (60 د.أ)</option>
-                              <option value="Minor Surgery">Minor Surgery (150 د.أ)</option>
-                            </select>
-                            <button onClick={addService} className="bg-emerald-600 text-white px-4 rounded-lg font-bold text-sm hover:bg-emerald-700">Add Service</button>
+                            <button 
+                              onClick={() => setServiceMode('catalog')} 
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${serviceMode === 'catalog' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 border'}`}
+                            >
+                              <i className="fa-solid fa-list mr-1"></i> From Catalog
+                            </button>
+                            <button 
+                              onClick={() => setServiceMode('custom')} 
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${serviceMode === 'custom' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 border'}`}
+                            >
+                              <i className="fa-solid fa-pen mr-1"></i> Custom Entry
+                            </button>
                           </div>
+
+                          {serviceMode === 'catalog' ? (
+                            <div className="flex gap-2 mb-3">
+                              <select className="flex-1 p-2 rounded-lg border text-sm bg-white" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+                                {catalogServices.length > 0 ? (
+                                  catalogServices.map(s => (
+                                    <option key={s.id} value={s.serviceName}>{s.serviceName} ({s.price} {s.currency})</option>
+                                  ))
+                                ) : (
+                                  <>
+                                    <option value="Consultation">General Consultation (50 JOD)</option>
+                                    <option value="Follow-up">Follow-up Visit (25 JOD)</option>
+                                    <option value="Ultrasound">Ultrasound (80 JOD)</option>
+                                    <option value="Lab Test (Basic)">Lab Test - Basic (40 JOD)</option>
+                                    <option value="X-Ray">X-Ray (60 JOD)</option>
+                                    <option value="Minor Surgery">Minor Surgery (150 JOD)</option>
+                                  </>
+                                )}
+                              </select>
+                              <button onClick={addService} className="bg-emerald-600 text-white px-4 rounded-lg font-bold text-sm hover:bg-emerald-700">Add</button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2 mb-3">
+                              <input className="flex-1 p-2 rounded-lg border text-sm" placeholder="Service name" value={customServiceName} onChange={e => setCustomServiceName(e.target.value)} />
+                              <input className="w-24 p-2 rounded-lg border text-sm" type="number" placeholder="Price" value={customServicePrice} onChange={e => setCustomServicePrice(e.target.value)} />
+                              <button onClick={() => {
+                                if (!customServiceName || !customServicePrice) return;
+                                setInvoiceItems([...invoiceItems, { id: Date.now().toString(), description: customServiceName, price: Number(customServicePrice) }]);
+                                setCustomServiceName(''); setCustomServicePrice('');
+                              }} className="bg-emerald-600 text-white px-4 rounded-lg font-bold text-sm hover:bg-emerald-700">Add</button>
+                            </div>
+                          )}
                           
                           {invoiceItems.length > 0 ? (
                             <div className="space-y-2 bg-white p-3 rounded-lg border border-gray-100">
