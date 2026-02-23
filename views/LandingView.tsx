@@ -211,126 +211,183 @@ const LandingView: React.FC = () => {
       </nav>
 
       {/* ════════════════ HERO — ROTATING HEADLINE ════════════════ */}
-      <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'linear-gradient(165deg, #0a0f1e 0%, #0d1424 35%, #101828 65%, #0f172a 100%)' }}>
-        {/* Subtle ambient glow */}
-        <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/[0.04] rounded-full blur-[200px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[500px] bg-indigo-500/[0.03] rounded-full blur-[180px] pointer-events-none" />
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-[#060a13]">
+        {/* Noise texture overlay */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat' }} />
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-32">
-          <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
+        {/* Gradient orbs — very subtle */}
+        <div className="absolute top-[-10%] right-[-5%] w-[700px] h-[700px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-15%] left-[-10%] w-[800px] h-[800px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.04) 0%, transparent 70%)' }} />
 
-            {/* Right side — Text (RTL: appears on the right) */}
+        {/* Fine horizontal lines — enterprise feel */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[20, 35, 50, 65, 80].map(top => (
+            <div key={top} className="absolute w-full h-px" style={{ top: `${top}%`, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.03) 70%, transparent 100%)' }} />
+          ))}
+        </div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-32 md:py-40">
+          <div className="grid lg:grid-cols-[1fr_0.85fr] gap-16 xl:gap-28 items-center">
+
+            {/* ── Text Column ── */}
             <div className="text-right hero-text-enter">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-8">
-                <span className="block text-white">إدارة طبية</span>
-                <span className="block h-[1.2em] relative overflow-hidden mt-2">
+              {/* Eyebrow */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-flex items-center gap-2.5 px-5 py-2 bg-white/[0.04] border border-white/[0.06] rounded-full text-white/40 text-[13px] font-medium mb-10 backdrop-blur-sm"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span>
+                نظام تشغيل للمراكز الطبية
+              </motion.div>
+
+              {/* Main headline */}
+              <h1 className="mb-10">
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="block text-[clamp(2.8rem,6vw,5rem)] font-extrabold text-white/90 leading-[1.15] mb-4"
+                  style={{ fontFamily: "'Cairo', sans-serif" }}
+                >
+                  إدارة طبية
+                </motion.span>
+
+                {/* Rotating word container — generous height, no clip issues */}
+                <span className="block relative" style={{ height: 'clamp(4rem, 8vw, 6.5rem)' }}>
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={rotatingWords[wordIndex]}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -30 }}
-                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute inset-0 bg-clip-text text-transparent bg-gradient-to-l from-primary via-cyan-300 to-secondary"
+                      initial={{ opacity: 0, y: 40, filter: 'blur(8px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, y: -40, filter: 'blur(8px)' }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute right-0 top-0 text-[clamp(2.8rem,6vw,5rem)] font-extrabold leading-[1.3]"
+                      style={{ fontFamily: "'Cairo', sans-serif", WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundImage: 'linear-gradient(135deg, #38bdf8 0%, #a78bfa 50%, #818cf8 100%)' }}
                     >
                       {rotatingWords[wordIndex]}
                     </motion.span>
                   </AnimatePresence>
+
+                  {/* Soft glow under rotating text */}
+                  <div className="absolute bottom-0 right-0 w-48 h-1 rounded-full bg-gradient-to-l from-sky-400/20 via-violet-400/15 to-transparent" />
                 </span>
               </h1>
 
-              <p className="text-slate-400 text-lg md:text-xl leading-relaxed max-w-lg mr-0 ml-auto lg:ml-0 mb-10">
+              {/* Subheading */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="text-white/30 text-lg md:text-xl leading-relaxed max-w-md mr-0 ml-auto lg:ml-0 mb-12"
+                style={{ fontFamily: "'Cairo', sans-serif" }}
+              >
                 منصة تشغيل متكاملة للمراكز الطبية الحديثة.
-              </p>
+              </motion.p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-end lg:justify-start">
-                <a href="#contact" className="group px-8 py-4 bg-white text-slate-950 font-bold rounded-full hover:shadow-xl hover:shadow-white/10 transition-all text-base text-center">
+              {/* CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col sm:flex-row gap-4 justify-end lg:justify-start"
+              >
+                <a href="#contact" className="group relative px-8 py-4 bg-white text-[#060a13] font-bold rounded-full text-[15px] text-center transition-all duration-300 hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]">
                   اطلب عرض تجريبي
-                  <i className="fa-solid fa-arrow-left mr-2 text-xs group-hover:-translate-x-1 inline-block transition-transform"></i>
+                  <i className="fa-solid fa-arrow-left mr-2.5 text-xs group-hover:-translate-x-1.5 inline-block transition-transform duration-300"></i>
                 </a>
-                <a href="#demo-video" className="group px-8 py-4 bg-transparent border border-white/15 text-white font-bold rounded-full hover:bg-white/5 transition-all text-base text-center">
+                <a href="#demo-video" className="group px-8 py-4 border border-white/10 text-white/60 font-bold rounded-full text-[15px] text-center transition-all duration-300 hover:text-white/90 hover:border-white/20 hover:bg-white/[0.03]">
                   شاهد كيف يعمل النظام
-                  <i className="fa-solid fa-circle-play mr-2 text-sm opacity-50 group-hover:opacity-100 transition-opacity"></i>
+                  <i className="fa-solid fa-play mr-2.5 text-[10px] opacity-40 group-hover:opacity-80 transition-opacity duration-300"></i>
                 </a>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Left side — Frosted Glass Dashboard Mockup */}
+            {/* ── Dashboard Mockup ── */}
             <div className="hero-dashboard-enter hidden lg:block">
-              <div className="relative">
-                {/* Glow behind card */}
-                <div className="absolute -inset-8 bg-gradient-to-br from-primary/10 via-cyan-400/5 to-indigo-500/10 rounded-[32px] blur-2xl opacity-60" />
+              <motion.div
+                initial={{ opacity: 0, y: 40, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="relative"
+              >
+                {/* Ambient glow */}
+                <div className="absolute -inset-12 rounded-[40px] pointer-events-none" style={{ background: 'radial-gradient(ellipse at 60% 40%, rgba(56,189,248,0.06) 0%, rgba(99,102,241,0.04) 40%, transparent 70%)' }} />
 
-                <div className="relative bg-white/[0.04] border border-white/[0.08] rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/30">
-                  {/* Window chrome */}
+                <div className="relative bg-white/[0.03] border border-white/[0.06] rounded-[24px] p-6 backdrop-blur-xl overflow-hidden">
+                  {/* Top bar */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-white/10" />
-                      <div className="w-3 h-3 rounded-full bg-white/10" />
-                      <div className="w-3 h-3 rounded-full bg-white/10" />
-                    </div>
-                    <span className="text-[10px] text-white/20 font-mono tracking-wider">Control Center</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span className="text-[10px] text-emerald-400/60 font-mono">LIVE</span>
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                    </div>
+                    <span className="text-[9px] text-white/[0.12] font-mono tracking-[0.2em] uppercase">Control Center</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 animate-pulse"></span>
+                      <span className="text-[9px] text-emerald-400/40 font-mono">LIVE</span>
                     </div>
                   </div>
 
-                  {/* KPI row */}
-                  <div className="grid grid-cols-4 gap-3 mb-5">
+                  {/* KPI cards */}
+                  <div className="grid grid-cols-4 gap-2.5 mb-4">
                     {[
-                      { ref: patientsToday.ref, val: patientsToday.value, label: 'مرضى', color: 'text-cyan-400', suffix: '' },
-                      { ref: revenue.ref, val: revenue.value, label: 'إيرادات', color: 'text-amber-400', suffix: '' },
-                      { ref: occupancy.ref, val: occupancy.value, label: 'إشغال', color: 'text-emerald-400', suffix: '%' },
-                      { ref: appointmentsCount.ref, val: appointmentsCount.value, label: 'مواعيد', color: 'text-violet-400', suffix: '' },
+                      { ref: patientsToday.ref, val: patientsToday.value, label: 'مرضى', color: 'text-cyan-400/80', suffix: '' },
+                      { ref: revenue.ref, val: revenue.value, label: 'إيرادات', color: 'text-amber-400/80', suffix: '' },
+                      { ref: occupancy.ref, val: occupancy.value, label: 'إشغال', color: 'text-emerald-400/80', suffix: '%' },
+                      { ref: appointmentsCount.ref, val: appointmentsCount.value, label: 'مواعيد', color: 'text-violet-400/80', suffix: '' },
                     ].map((s, i) => (
-                      <div key={i} ref={s.ref as React.Ref<HTMLDivElement>} className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-3 text-center">
-                        <div className={`text-xl font-bold ${s.color} tabular-nums`}>{s.val}{s.suffix}</div>
-                        <div className="text-[9px] text-white/25 mt-1 font-medium">{s.label}</div>
+                      <div key={i} ref={s.ref as React.Ref<HTMLDivElement>} className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-3 text-center">
+                        <div className={`text-lg font-bold ${s.color} tabular-nums`}>{s.val}{s.suffix}</div>
+                        <div className="text-[8px] text-white/[0.15] mt-1 font-medium">{s.label}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Mini chart */}
-                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4 mb-4">
+                  {/* Chart */}
+                  <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4 mb-3">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[10px] text-white/30 font-medium">إيرادات الأسبوع</span>
-                      <span className="text-[10px] text-emerald-400/70 font-mono">+12.5%</span>
+                      <span className="text-[9px] text-white/[0.2] font-medium">إيرادات الأسبوع</span>
+                      <span className="text-[9px] text-emerald-400/50 font-mono">+12.5%</span>
                     </div>
-                    <div className="flex items-end gap-1.5 h-14">
-                      {[35, 52, 40, 65, 48, 72, 58].map((h, i) => (
-                        <div key={i} className="flex-1 rounded-md bg-gradient-to-t from-white/10 to-white/[0.03] chart-bar-grow" style={{ height: `${h}%`, animationDelay: `${i * 100 + 800}ms` }} />
+                    <div className="flex items-end gap-1.5 h-16">
+                      {[30, 48, 36, 62, 44, 70, 55].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-sm chart-bar-grow" style={{ height: `${h}%`, animationDelay: `${i * 120 + 1000}ms`, background: `linear-gradient(to top, rgba(56,189,248,${0.12 + i * 0.02}), rgba(99,102,241,0.04))` }} />
                       ))}
                     </div>
                   </div>
 
-                  {/* Patient list */}
-                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4">
-                    <div className="text-[10px] text-white/25 mb-3 font-medium">آخر المرضى</div>
+                  {/* Patients */}
+                  <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+                    <div className="text-[9px] text-white/[0.15] mb-3 font-medium">آخر المرضى</div>
                     {['أحمد محمد', 'سارة علي', 'خالد يوسف'].map((name, i) => (
-                      <div key={i} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0 patient-row-enter" style={{ animationDelay: `${1200 + i * 200}ms` }}>
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-[10px] text-white/40 font-bold">
+                      <div key={i} className="flex items-center gap-3 py-2 border-b border-white/[0.03] last:border-0 patient-row-enter" style={{ animationDelay: `${1400 + i * 200}ms` }}>
+                        <div className="w-6 h-6 rounded-full bg-white/[0.04] flex items-center justify-center text-[9px] text-white/20 font-bold">
                           {name.charAt(0)}
                         </div>
-                        <span className="text-[11px] text-white/35 flex-1 text-right">{name}</span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-medium
-                          ${i === 0 ? 'bg-emerald-500/10 text-emerald-400/70' : i === 1 ? 'bg-amber-500/10 text-amber-400/70' : 'bg-cyan-500/10 text-cyan-400/70'}`}>
+                        <span className="text-[10px] text-white/25 flex-1 text-right">{name}</span>
+                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-medium
+                          ${i === 0 ? 'bg-emerald-500/[0.06] text-emerald-400/50' : i === 1 ? 'bg-amber-500/[0.06] text-amber-400/50' : 'bg-cyan-500/[0.06] text-cyan-400/50'}`}>
                           {i === 0 ? 'عند الطبيب' : i === 1 ? 'منتظر' : 'وصل'}
                         </span>
                       </div>
                     ))}
                   </div>
+
+                  {/* Subtle inner border glow on top edge */}
+                  <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
 
         {/* Scroll indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
-            <div className="w-6 h-10 rounded-full border-2 border-white/10 flex items-start justify-center pt-2">
-              <div className="w-1 h-2 rounded-full bg-white/20" />
+          <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}>
+            <div className="w-5 h-9 rounded-full border border-white/[0.08] flex items-start justify-center pt-2">
+              <div className="w-0.5 h-1.5 rounded-full bg-white/[0.15]" />
             </div>
           </motion.div>
         </div>
