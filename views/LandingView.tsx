@@ -303,7 +303,7 @@ const LandingView: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
                 </span>
                 <span className="text-xs font-medium text-teal-300 tracking-wider uppercase" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                  نظام المستقبل الطبي
+                  نظام إدارة طبية متكامل
                 </span>
               </motion.div>
 
@@ -351,7 +351,7 @@ const LandingView: React.FC = () => {
                 className="text-slate-400 text-lg md:text-xl leading-relaxed max-w-xl mr-0 ml-auto lg:ml-0 mb-10 font-light"
                 style={{ fontFamily: "'Cairo', sans-serif" }}
               >
-                تجاوز الأنظمة التقليدية. اكتشف منصة تشغيل متكاملة مصممة بتقنيات المستقبل لترتقي بمركزك الطبي إلى آفاق جديدة من الكفاءة والذكاء.
+                نظام سحابي شامل يجمع الاستقبال، المواعيد، الملف الطبي، الفواتير، والموارد البشرية في منصة واحدة سهلة الاستخدام. وفّر وقتك وركّز على مرضاك.
               </motion.p>
 
               {/* CTAs */}
@@ -478,7 +478,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-microchip animate-pulse"></i> أتمتة عصبية
+              <i className="fa-solid fa-microchip animate-pulse"></i> سير عمل مؤتمت
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -487,7 +487,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-5xl font-black mb-6 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
-              دورة حياة المريض — <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400">ذاتية القيادة</span>
+              رحلة المريض — <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400">من الحجز حتى الفاتورة</span>
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -496,7 +496,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              النظام يتوقع الخطوة التالية وينفذها قبل أن تطلبها. من لحظة دخول المريض حتى إصدار التقرير المالي.
+              كل خطوة مترابطة تلقائياً: المريض يحجز، الطبيب يُبلّغ، السجل يُحدّث، والفاتورة تصدر — بدون إدخال يدوي مكرر.
             </motion.p>
           </div>
 
@@ -568,7 +568,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-eye animate-pulse"></i> رؤية المستقبل
+              <i className="fa-solid fa-eye animate-pulse"></i> تطور ملموس
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -586,18 +586,18 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              النتيجة التي تنتظرك — ليست مجرد ميزات برمجية، بل واقع تشغيلي جديد كلياً يضعك في صدارة القطاع الطبي.
+              هذا ما يتغير فعلياً في مركزك بعد استخدام النظام — نتائج حقيقية يلمسها فريقك ومرضاك.
             </motion.p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: 'fa-file-circle-xmark', text: 'بيئة خالية من الورق تماماً', desc: 'رقمنة كاملة من الاستقبال حتى الأرشيف', color: 'teal' },
-              { icon: 'fa-calculator', text: 'دقة مالية مطلقة', desc: 'ربط تلقائي بين الخدمات والفواتير بلا تسرب مالي', color: 'teal' },
-              { icon: 'fa-calendar-check', text: 'جدولة ذكية خالية من التضارب', desc: 'خوارزميات تمنع تداخل المواعيد وتدير قوائم الانتظار', color: 'cyan' },
-              { icon: 'fa-chart-pie', text: 'رؤية تحليلية فورية', desc: 'لوحات قياس أداء (KPIs) تتحدث لحظة بلحظة', color: 'cyan' },
-              { icon: 'fa-user-doctor', text: 'تمكين الطاقم الطبي', desc: 'مساحات عمل مخصصة تزيد من إنتاجية كل طبيب', color: 'teal' },
-              { icon: 'fa-building-shield', text: 'حوكمة مؤسسية (Corporate)', desc: 'انتقال من الإدارة الفردية إلى العمل المؤسسي المنظم', color: 'cyan' },
+              { icon: 'fa-file-circle-xmark', text: 'تقليل الأوراق بشكل كبير', desc: 'سجلات رقمية للمرضى والمواعيد والفواتير بدل الملفات الورقية', color: 'teal' },
+              { icon: 'fa-calculator', text: 'فواتير دقيقة ومنظمة', desc: 'ربط تلقائي بين الخدمات المقدمة والفواتير مع تتبع المدفوعات', color: 'teal' },
+              { icon: 'fa-calendar-check', text: 'مواعيد بدون تضارب', desc: 'النظام يمنع حجز نفس الوقت مرتين ويدير قائمة الانتظار', color: 'cyan' },
+              { icon: 'fa-chart-pie', text: 'تقارير وإحصائيات واضحة', desc: 'إيرادات، عدد المرضى، أداء الأطباء — في لوحة واحدة', color: 'cyan' },
+              { icon: 'fa-user-doctor', text: 'لوحة تحكم لكل طبيب', desc: 'كل طبيب يرى مرضاه، تشخيصاته، وملاحظاته في مكان واحد', color: 'teal' },
+              { icon: 'fa-building-shield', text: 'إدارة مؤسسية منظمة', desc: 'صلاحيات واضحة لكل موظف، وتقارير HR وحضور مؤتمتة', color: 'cyan' },
             ].map((item, i) => (
               <motion.div 
                 key={i}
@@ -646,7 +646,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              الفجوة التقنية بين الماضي والمستقبل لم تعد مجرد رفاهية، بل هي مسألة بقاء.
+              مقارنة واقعية بين ما اعتدت عليه وما يقدمه لك MED LOOP.
             </motion.p>
           </div>
 
@@ -666,18 +666,18 @@ const LandingView: React.FC = () => {
                     <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 text-xl">
                       <i className="fa-solid fa-triangle-exclamation"></i>
                     </div>
-                    <h3 className="text-2xl font-bold text-red-400">عصر الأنظمة المتهالكة</h3>
+                    <h3 className="text-2xl font-bold text-red-400">الطريقة التقليدية</h3>
                   </div>
                   
                   <div className="space-y-5">
                     {[
-                      'برمجيات محلية مقيدة بجهاز واحد',
-                      'بيانات هشة — تعطل الجهاز يعني كارثة',
-                      'غياب تام للنسخ الاحتياطي السحابي',
-                      'انعدام التواصل الرقمي مع المريض',
-                      'تقارير بدائية لا تدعم اتخاذ القرار',
-                      'عزلة تامة عن الأجهزة الطبية الحديثة',
-                      'واجهات مستخدم معقدة وبطيئة',
+                      'برنامج مثبت على جهاز واحد — لا يمكن الوصول من الخارج',
+                      'بيانات محفوظة محلياً — خطر الضياع عند تعطل الجهاز',
+                      'لا يوجد نسخ احتياطي سحابي تلقائي',
+                      'لا يوجد بوابة إلكترونية للمريض',
+                      'تقارير محدودة تحتاج تصدير يدوي',
+                      'لا يدعم ربط الأجهزة الطبية (HL7)',
+                      'واجهات قديمة تحتاج تدريب طويل',
                     ].map((t, i) => (
                       <div key={i} className="flex items-start gap-4">
                         <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -712,13 +712,13 @@ const LandingView: React.FC = () => {
                   
                   <div className="space-y-5 relative z-10">
                     {[
-                      'بنية سحابية فائقة — وصول آمن من أي مكان',
-                      'تشفير عسكري وحماية سيبرانية متقدمة',
-                      'نسخ احتياطي لحظي مشفر جغرافياً',
-                      'بوابة تفاعلية متكاملة للمرضى',
-                      'ذكاء أعمال (BI) وتقارير استراتيجية فورية',
-                      'تكامل سلس (HL7) مع أحدث الأجهزة الطبية',
-                      'تجربة مستخدم (UX) سابقة لعصرها',
+                      'نظام سحابي — ادخل من أي جهاز وأي مكان بأمان',
+                      'تشفير SSL/TLS ومصادقة JWT وصلاحيات متعددة المستويات',
+                      'نسخ احتياطي سحابي تلقائي عبر Neon Database',
+                      'بوابة إلكترونية للمريض: حجز، متابعة، سجل طبي',
+                      'تقارير تفصيلية: إيرادات، مرضى، حضور، أداء',
+                      'ربط أجهزة طبية عبر بروتوكول HL7 و Bridge Agent',
+                      'واجهة عصرية وسهلة تعمل من المتصفح مباشرة',
                     ].map((t, i) => (
                       <div key={i} className="flex items-start gap-4">
                         <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(45,212,191,0.3)]">
@@ -746,7 +746,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-server animate-pulse"></i> بنية مؤسسية (SaaS)
+              <i className="fa-solid fa-server animate-pulse"></i> منصة SaaS متعددة المراكز
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -764,16 +764,16 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              ليس مجرد برنامج مشترك. نحن نوفر بنية تحتية سحابية تمنح كل عميل عالمه الرقمي الخاص بأعلى معايير الأمان والخصوصية.
+              كل مركز طبي يحصل على رابطه الخاص وقاعدة بياناته المنفصلة — بيانات عملائك لا يراها أحد غيرك.
             </motion.p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: 'fa-globe', title: 'نطاق فرعي مخصص', desc: 'رابط خاص بمركزك يعكس هويتك المؤسسية', color: 'cyan' },
-              { icon: 'fa-database', title: 'عزل تام للبيانات', desc: 'قاعدة بيانات منفصلة تضمن خصوصية مطلقة', color: 'cyan' },
-              { icon: 'fa-shield-halved', title: 'حماية سيبرانية', desc: 'تشفير متقدم وصلاحيات دقيقة لكل مستخدم', color: 'cyan' },
-              { icon: 'fa-sliders', title: 'تحكم لا محدود', desc: 'تخصيص كامل للخدمات، الأسعار، والعمليات', color: 'fuchsia' },
+              { icon: 'fa-globe', title: 'رابط خاص لكل مركز', desc: 'your-clinic.medloop.com — رابط مخصص لمركزك', color: 'cyan' },
+              { icon: 'fa-database', title: 'بيانات منفصلة', desc: 'قاعدة بيانات مستقلة لكل عميل لضمان الخصوصية', color: 'cyan' },
+              { icon: 'fa-shield-halved', title: 'حماية وصلاحيات', desc: 'SSL/TLS + JWT + صلاحيات حسب الدور الوظيفي', color: 'cyan' },
+              { icon: 'fa-sliders', title: 'تخصيص مرن', desc: 'حدد خدماتك وأسعارك وأقسامك حسب احتياجك', color: 'cyan' },
             ].map((item, i) => (
               <motion.div 
                 key={i}
@@ -827,7 +827,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-cubes animate-pulse"></i> {allFeatures.length}+ قدرة تشغيلية
+              <i className="fa-solid fa-cubes animate-pulse"></i> {allFeatures.length}+ ميزة متكاملة
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -836,7 +836,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-5xl font-black mb-6 text-white"
             >
-              ترسانة تقنية في <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(45,212,191,0.3)]">منصة واحدة</span>
+              كل ما يحتاجه مركزك في <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(45,212,191,0.3)]">منصة واحدة</span>
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -845,7 +845,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              تصفح القدرات التشغيلية التي ستحول مركزك إلى آلة تعمل بدقة متناهية.
+              تصفّح الأقسام واكتشف كيف يغطي النظام جميع احتياجات مركزك الطبي.
             </motion.p>
           </div>
 
@@ -1029,7 +1029,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-microchip animate-pulse"></i> النواة التقنية
+              <i className="fa-solid fa-microchip animate-pulse"></i> البنية التقنية
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -1038,7 +1038,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-5xl font-black mb-6 text-white"
             >
-              بنية تحتية <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(45,212,191,0.3)]">لا تُقهر</span>
+              بنية تحتية <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(45,212,191,0.3)]">موثوقة وآمنة</span>
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -1047,16 +1047,16 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light"
             >
-              نحن لا نبني برامج، نحن نبني حصوناً رقمية. أمان عسكري، أداء فائق، وتوافر مستمر.
+              نعتمد على تقنيات حديثة ومجربة لضمان أمان بياناتك، سرعة الأداء، واستمرارية الخدمة.
             </motion.p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { icon: 'fa-cloud', title: 'بنية سحابية موزعة', desc: 'خوادم عالمية تضمن سرعة استجابة أجزاء من الثانية وتوافر 99.99%.', color: 'teal' },
-              { icon: 'fa-lock', title: 'تشفير عسكري', desc: 'تشفير End-to-End لجميع البيانات الطبية والمالية. لا أحد يرى بياناتك سواك.', color: 'cyan' },
-              { icon: 'fa-clock-rotate-left', title: 'نسخ احتياطي لحظي', desc: 'نسخ احتياطية مشفرة وموزعة جغرافياً. بياناتك في مأمن من أي كارثة.', color: 'teal' },
-              { icon: 'fa-bolt', title: 'أداء فائق (High Performance)', desc: 'معمارية مصممة للتعامل مع آلاف العمليات المتزامنة بدون أي تباطؤ.', color: 'cyan' },
+              { icon: 'fa-cloud', title: 'استضافة سحابية (Neon + Vercel)', desc: 'النظام يعمل على سحابة Vercel مع قاعدة بيانات Neon Serverless لضمان سرعة وتوافر عالي.', color: 'teal' },
+              { icon: 'fa-lock', title: 'تشفير وحماية متقدمة', desc: 'SSL/TLS لتشفير البيانات أثناء النقل، JWT للمصادقة، Helmet و Rate Limiting للحماية.', color: 'cyan' },
+              { icon: 'fa-clock-rotate-left', title: 'نسخ احتياطي تلقائي', desc: 'نسخ احتياطية سحابية تلقائية عبر Neon Database لحماية بياناتك من الضياع.', color: 'teal' },
+              { icon: 'fa-bolt', title: 'أداء سريع ومستقر', desc: 'بنية Serverless تتوسع تلقائياً حسب الحاجة مع استجابة سريعة.', color: 'cyan' },
             ].map((item, i) => (
               <motion.div 
                 key={i}
@@ -1129,7 +1129,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-circle-play animate-pulse"></i> العرض السينمائي
+              <i className="fa-solid fa-circle-play animate-pulse"></i> شاهد النظام
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -1138,7 +1138,7 @@ const LandingView: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-5xl font-black mb-6 text-white"
             >
-              60 ثانية ستغير <span className="text-teal-400 drop-shadow-[0_0_15px_rgba(20,184,166,0.3)]">مفهومك</span> للإدارة الطبية
+              شاهد كيف يعمل <span className="text-teal-400 drop-shadow-[0_0_15px_rgba(20,184,166,0.3)]">النظام</span> من الداخل
             </motion.h2>
           </div>
 
@@ -1181,7 +1181,7 @@ const LandingView: React.FC = () => {
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold mb-6"
             >
-              <i className="fa-solid fa-satellite-dish animate-pulse"></i> قناة الاتصال المشفرة
+              <i className="fa-solid fa-headset animate-pulse"></i> تواصل معنا
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -1284,13 +1284,13 @@ const LandingView: React.FC = () => {
                   </div>
                   
                   <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight text-white">
-                    هل مركزك جاهز
+                    جاهز تنقل مركزك
                     <br />
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400">للمستقبل؟</span>
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400">للمستوى التالي؟</span>
                   </h2>
                   
                   <p className="text-slate-400 mb-12 text-xl max-w-2xl mx-auto font-light">
-                    كل يوم تقضيه في الأنظمة التقليدية هو فرصة ضائعة للنمو. انضم إلى نخبة المراكز الطبية التي تعمل بذكاء.
+                    وفّر وقت فريقك، نظّم عملك، وقدّم تجربة أفضل لمرضاك. ابدأ مع MED LOOP اليوم.
                   </p>
                   
                   <a href="#contact" className="inline-flex items-center justify-center gap-4 px-12 py-5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold rounded-2xl hover:shadow-[0_0_40px_rgba(45,212,191,0.4)] transition-all duration-300 hover:scale-[1.02] text-lg group">
