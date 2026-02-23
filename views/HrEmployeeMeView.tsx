@@ -3,19 +3,7 @@ import Layout from '../components/Layout';
 import { HrMeProfile, HrMonthlyReport } from '../types';
 import { hrMeService, hrWebAuthnService, hrAttendanceService, hrReportsService, hrDebugService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
-
-// ───────── helpers ─────────
-function fmtMinutes(mins: number) {
-  if (!mins) return '0';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function fmtTime(ts: string | null) {
-  if (!ts) return '—';
-  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-}
+import { fmtMinutes, fmtTime } from '../utils/formatters';
 
 const DAY_LABELS_EN = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_LABELS_AR = ['', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت', 'أحد'];

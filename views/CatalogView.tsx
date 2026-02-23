@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { pgCatalogServices, pgCatalogMedications } from '../services/apiServices';
 import type { CatalogService, CatalogMedication, ImportResult } from '../types';
-import * as XLSX from 'xlsx';
+
+/** Lazy-load xlsx only when needed */
+const loadXLSX = () => import('xlsx');
 
 type CatalogTab = 'services' | 'medications';
 
@@ -112,7 +114,8 @@ const CatalogView: React.FC = () => {
   };
 
   // ===================== DOWNLOAD TEMPLATE =====================
-  const downloadServiceTemplate = () => {
+  const downloadServiceTemplate = async () => {
+    const XLSX = await loadXLSX();
     const data = [
       { serviceName: 'General Consultation', category: 'Consultation', price: 30, currency: 'JOD', active: 'TRUE' },
       { serviceName: 'Follow-up Visit', category: 'Consultation', price: 15, currency: 'JOD', active: 'TRUE' },
@@ -129,7 +132,8 @@ const CatalogView: React.FC = () => {
     XLSX.writeFile(wb, 'services_template.xlsx');
   };
 
-  const downloadMedTemplate = () => {
+  const downloadMedTemplate = async () => {
+    const XLSX = await loadXLSX();
     const data = [
       { brandName: 'Panadol', genericName: 'Paracetamol', strength: '500mg', dosageForm: 'Tablet', route: 'Oral', defaultDose: '1 tablet', defaultFrequency: '3 times daily', defaultDuration: '5 days', notes: 'After meals', active: 'TRUE' },
       { brandName: 'Augmentin', genericName: 'Amoxicillin/Clavulanate', strength: '625mg', dosageForm: 'Tablet', route: 'Oral', defaultDose: '1 tablet', defaultFrequency: '2 times daily', defaultDuration: '7 days', notes: '', active: 'TRUE' },
@@ -157,8 +161,9 @@ const CatalogView: React.FC = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       try {
+        const XLSX = await loadXLSX();
         const data = new Uint8Array(ev.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];

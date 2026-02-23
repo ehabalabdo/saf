@@ -4,7 +4,6 @@ import Layout from '../components/Layout';
 import { CourseService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { Course, CourseStudent, CourseSession, Gender, UserRole } from '../types';
-import { jsPDF } from "jspdf";
 
 const CoursesView: React.FC = () => {
   const { user } = useAuth();
@@ -113,7 +112,7 @@ const CoursesView: React.FC = () => {
 
   const handleGenerateCertificate = async (student: CourseStudent) => {
       if (!user) return;
-      
+      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF('l', 'mm', 'a4');
       const width = doc.internal.pageSize.getWidth();
       const height = doc.internal.pageSize.getHeight();
@@ -268,7 +267,7 @@ const CoursesView: React.FC = () => {
                                       <td className="px-6 py-4 text-xs">{new Date(s.enrollmentDate).toLocaleDateString()}</td>
                                       <td className="px-6 py-4">
                                           <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${s.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : s.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                              {s.paymentStatus} ({Math.round((s.paidAmount/s.totalFees)*100)}%)
+                                              {s.paymentStatus} ({s.totalFees > 0 ? Math.round((s.paidAmount/s.totalFees)*100) : 0}%)
                                           </span>
                                       </td>
                                       <td className="px-6 py-4 text-end">

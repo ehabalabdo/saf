@@ -102,7 +102,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-6 overflow-y-auto custom-scrollbar">
-           <div className="px-4 pb-2 text-xs font-bold uppercase text-slate-600 tracking-wider">Menu</div>
+           <div className="px-4 pb-2 text-xs font-bold uppercase text-slate-600 tracking-wider">{t('menu_label')}</div>
            
            {/* Admin & Secretary Views */}
            {role === UserRole.ADMIN && <NavItem to="/admin" icon="fa-solid fa-shield-halved" label={t('admin_dashboard')} />}
@@ -114,8 +114,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                {role === UserRole.DOCTOR && <NavItem to="/doctor" icon="fa-solid fa-user-doctor" label={t('doctor_console')} />}
                <NavItem to="/appointments" icon="fa-regular fa-calendar-check" label={t('appointments_nav')} />
                <NavItem to="/patients" icon="fa-solid fa-users-viewfinder" label={t('patients_registry')} />
-               {showDeviceResults && <NavItem to="/device-results" icon="fa-solid fa-microscope" label="نتائج الأجهزة" />}
-               {role === UserRole.ADMIN && <NavItem to="/device-management" icon="fa-solid fa-microchip" label="إدارة الأجهزة" />}
+               {showDeviceResults && <NavItem to="/device-results" icon="fa-solid fa-microscope" label={t('device_results_nav')} />}
+               {role === UserRole.ADMIN && <NavItem to="/device-management" icon="fa-solid fa-microchip" label={t('device_mgmt_nav')} />}
                {(role === UserRole.ADMIN || role === UserRole.DOCTOR) && <NavItem to="/clinic-history" icon="fa-solid fa-chart-line" label={t('clinic_history_nav')} />}
              </>
            )}
@@ -123,22 +123,22 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
            {/* Departments Section */}
            {(showLabView || showImplantView || showAcademyView) && (
                <>
-                   {showClinicalViews && <div className="px-4 pb-2 mt-6 text-xs font-bold uppercase text-slate-600 tracking-wider">Departments</div>}
-                   {showLabView && <NavItem to="/dental-lab" icon="fa-solid fa-tooth" label="Dental Lab" />}
-                   {showImplantView && <NavItem to="/implant-company" icon="fa-solid fa-box-open" label="Implant Co." />}
-                   {showAcademyView && <NavItem to="/academy" icon="fa-solid fa-graduation-cap" label="Beauty Academy" />}
+                   {showClinicalViews && <div className="px-4 pb-2 mt-6 text-xs font-bold uppercase text-slate-600 tracking-wider">{t('departments_label')}</div>}
+                   {showLabView && <NavItem to="/dental-lab" icon="fa-solid fa-tooth" label={t('dental_lab_nav')} />}
+                   {showImplantView && <NavItem to="/implant-company" icon="fa-solid fa-box-open" label={t('implant_co_nav')} />}
+                   {showAcademyView && <NavItem to="/academy" icon="fa-solid fa-graduation-cap" label={t('beauty_academy_nav')} />}
                </>
            )}
 
            {/* HR Section (Admin Only) */}
            {role === UserRole.ADMIN && (
                <>
-                   <div className="px-4 pb-2 mt-6 text-xs font-bold uppercase text-slate-600 tracking-wider">HR</div>
-                   <NavItem to="/hr/employees" icon="fa-solid fa-id-badge" label={language === 'ar' ? 'إدارة الموظفين' : 'HR Employees'} />
-                   <NavItem to="/hr/attendance" icon="fa-solid fa-fingerprint" label={language === 'ar' ? 'سجل الحضور' : 'Attendance'} />
-                   <NavItem to="/hr/payroll" icon="fa-solid fa-money-check-dollar" label={language === 'ar' ? 'الرواتب' : 'Payroll'} />
-                   <NavItem to="/hr/actions" icon="fa-solid fa-gavel" label={language === 'ar' ? 'إجراءات إدارية' : 'Actions'} />
-                   <NavItem to="/hr/reports" icon="fa-solid fa-chart-column" label={language === 'ar' ? 'تقارير HR' : 'HR Reports'} />
+                   <div className="px-4 pb-2 mt-6 text-xs font-bold uppercase text-slate-600 tracking-wider">{t('hr_label')}</div>
+                   <NavItem to="/hr/employees" icon="fa-solid fa-id-badge" label={t('hr_employees_nav')} />
+                   <NavItem to="/hr/attendance" icon="fa-solid fa-fingerprint" label={t('hr_attendance_nav')} />
+                   <NavItem to="/hr/payroll" icon="fa-solid fa-money-check-dollar" label={t('hr_payroll_nav')} />
+                   <NavItem to="/hr/actions" icon="fa-solid fa-gavel" label={t('hr_actions_nav')} />
+                   <NavItem to="/hr/reports" icon="fa-solid fa-chart-column" label={t('hr_reports_nav')} />
                </>
            )}
            
@@ -151,7 +151,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                </button>
                <button onClick={toggleTheme} className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-slate-400 hover:text-yellow-300 hover:bg-white/5 transition-all text-sm font-medium border border-white/5">
                  <i className={`fa-solid ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-                 <span>{isDarkMode ? 'Light' : 'Dark'}</span>
+                 <span>{isDarkMode ? t('light_mode') : t('dark_mode')}</span>
                </button>
            </div>
 

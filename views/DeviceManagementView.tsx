@@ -201,7 +201,7 @@ const DeviceManagementView: React.FC = () => {
       } else {
         await api.post('/api/devices', {
           clientId: user.clientId,
-          clinicId: deviceForm.clinicId || '1',
+          clinicId: deviceForm.clinicId || user.clinicId || null,
           name: deviceForm.name,
           type: deviceForm.type,
           connectionType: deviceForm.connectionType,

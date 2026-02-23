@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import { HrAttendanceRecord, HrAttendanceEvent, HrEmployee } from '../types';
 import { hrAttendanceService, hrEmployeesService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
+import { fmtTime, fmtMinutes, fmtDate } from '../utils/formatters';
 
 const STATUS_COLORS: Record<string, string> = {
   normal: 'bg-emerald-100 text-emerald-700',
@@ -20,27 +21,19 @@ const STATUS_LABELS_AR: Record<string, string> = {
   weekend: 'عطلة',
 };
 
-function fmtTime(ts: string | null) {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-}
 
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function fmtMinutes(mins: number) {
-  if (!mins) return '—';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+/** Sanitize a cell value to prevent CSV injection */
+function csvSafe(val: string | number | null | undefined): string {
+  if (val == null) return '';
+  const s = String(val);
+  if (/^[=+\-@\t\r]/.test(s)) return `'${s}`;
+  return s;
 }
 
 function downloadCSV(rows: HrAttendanceRecord[]) {
   const header = 'Date,Employee,Check In,Check Out,Total Min,Break Min,Net Work Min,Late Min,Overtime Min,Status\n';
   const body = rows.map(r =>
-    `${r.workDate},"${r.employeeName || ''}",${r.checkIn ? new Date(r.checkIn).toISOString() : ''},${r.checkOut ? new Date(r.checkOut).toISOString() : ''},${r.totalMinutes},${r.totalBreakMinutes || 0},${r.netWorkMinutes || r.totalMinutes},${r.lateMinutes},${r.overtimeMinutes},${r.status}`
+    `${csvSafe(r.workDate)},"${csvSafe(r.employeeName)}",${r.checkIn ? new Date(r.checkIn).toISOString() : ''},${r.checkOut ? new Date(r.checkOut).toISOString() : ''},${csvSafe(r.totalMinutes)},${csvSafe(r.totalBreakMinutes || 0)},${csvSafe(r.netWorkMinutes || r.totalMinutes)},${csvSafe(r.lateMinutes)},${csvSafe(r.overtimeMinutes)},${csvSafe(r.status)}`
   ).join('\n');
   const blob = new Blob([header + body], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -278,7 +271,7 @@ const HrAttendanceView: React.FC = () => {
                                     <div className="text-xs font-bold text-slate-700">
                                       {isAr ? EVENT_LABELS_AR[evt.eventType] : EVENT_LABELS[evt.eventType]}
                                     </div>
-                                    <div className="text-xs font-mono text-slate-500">{fmtTime(evt.timestamp)}</div>
+                                    <div className="text-xs font-mono text-slate-500">{fmtTime(evt.eventTime)}</div>
                                   </div>
                                   {idx < timelineEvents[r.id].length - 1 && (
                                     <i className="fa-solid fa-arrow-right text-slate-300 text-[10px] ms-1"></i>

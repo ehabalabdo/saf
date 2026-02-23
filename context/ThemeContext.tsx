@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -11,8 +11,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-        return localStorage.getItem('medcore_theme') === 'dark' || 
-               (!('medcore_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        return localStorage.getItem('medloop_theme') === 'dark' || 
+               (!('medloop_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
     return false;
   });
@@ -20,16 +20,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('medcore_theme', 'dark');
+      localStorage.setItem('medloop_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('medcore_theme', 'light');
+      localStorage.setItem('medloop_theme', 'light');
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setIsDarkMode(prev => !prev);
-  };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>

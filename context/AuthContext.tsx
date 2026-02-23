@@ -156,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const simulateLogin = (newUser: User) => {
+    if (window.location.hostname !== 'localhost') return; // production guard
     localStorage.setItem('user', JSON.stringify(newUser));
     setUser(newUser);
   }

@@ -59,13 +59,12 @@ const PatientsRegistryView: React.FC = () => {
   const getClinicName = (id: string) => clinics.find(c => c.id === id)?.name || id;
 
   const StatusBadge = ({ status }: { status: string }) => {
-    const styles = {
+    const styles: Record<string, string> = {
       'waiting': 'bg-amber-100 text-amber-700',
       'in-progress': 'bg-blue-100 text-blue-700',
       'completed': 'bg-green-100 text-green-700'
     };
     const label = status === 'waiting' ? t('waiting') : status === 'in-progress' ? t('in_progress') : t('completed');
-    // @ts-ignore
     return <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${styles[status] || 'bg-gray-100'}`}>{label}</span>;
   };
 

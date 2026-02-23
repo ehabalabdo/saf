@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { useClientSafe } from '../context/ClientContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Clinic, Patient, Gender, Priority, Appointment, Notification, Invoice } from '../types';
-import { jsPDF } from "jspdf";
 
 interface ReceptionViewProps {
     user?: any;
@@ -209,8 +208,10 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
         e.preventDefault();
         if (!formData.name || !formData.clinicId || !formData.phone || !user) return;
         
-        // Generate random 6-digit password
-        const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        // Generate cryptographically secure 6-digit password
+        const arr = new Uint32Array(1);
+        crypto.getRandomValues(arr);
+        const generatedPassword = String(100000 + (arr[0] % 900000));
         
         try {
             await PatientService.add(user, {
@@ -281,7 +282,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
   const handlePrintInvoice = async () => {
       if (!selectedInvoice) return;
       const settings = await SettingsService.getSettings();
-      
+      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       

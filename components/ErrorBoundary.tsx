@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
               نعتذر عن هذا الخطأ. يمكنك المحاولة مرة أخرى أو تسجيل الدخول من جديد.
             </p>
             
-            {this.state.error && (
+            {this.state.error && window.location.hostname === 'localhost' && (
               <details className="mb-6 text-left" dir="ltr">
                 <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600">Error Details</summary>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">

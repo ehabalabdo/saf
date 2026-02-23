@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 type Language = 'en' | 'ar';
 
@@ -166,7 +166,24 @@ const translations = {
     // Statuses
     waiting: "Waiting",
     in_progress: "In Progress",
-    completed: "Completed"
+    completed: "Completed",
+
+    // Layout Navigation
+    menu_label: "Menu",
+    departments_label: "Departments",
+    hr_label: "HR",
+    device_results_nav: "Device Results",
+    device_mgmt_nav: "Device Management",
+    dental_lab_nav: "Dental Lab",
+    implant_co_nav: "Implant Co.",
+    beauty_academy_nav: "Beauty Academy",
+    hr_employees_nav: "HR Employees",
+    hr_attendance_nav: "Attendance",
+    hr_payroll_nav: "Payroll",
+    hr_actions_nav: "Actions",
+    hr_reports_nav: "HR Reports",
+    light_mode: "Light",
+    dark_mode: "Dark"
   },
   ar: {
     // Auth & General
@@ -330,7 +347,24 @@ const translations = {
     // Statuses
     waiting: "انتظار",
     in_progress: "جاري المعاينة",
-    completed: "مكتمل"
+    completed: "مكتمل",
+
+    // Layout Navigation
+    menu_label: "القائمة",
+    departments_label: "الأقسام",
+    hr_label: "الموارد البشرية",
+    device_results_nav: "نتائج الأجهزة",
+    device_mgmt_nav: "إدارة الأجهزة",
+    dental_lab_nav: "مختبر الأسنان",
+    implant_co_nav: "شركة الزراعات",
+    beauty_academy_nav: "أكاديمية التجميل",
+    hr_employees_nav: "إدارة الموظفين",
+    hr_attendance_nav: "سجل الحضور",
+    hr_payroll_nav: "الرواتب",
+    hr_actions_nav: "إجراءات إدارية",
+    hr_reports_nav: "تقارير HR",
+    light_mode: "فاتح",
+    dark_mode: "داكن"
   }
 };
 
@@ -346,21 +380,25 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('medloop_language');
+    return (saved === 'ar' || saved === 'en') ? saved : 'en';
+  });
 
   useEffect(() => {
-    // Set HTML direction
+    // Set HTML direction + persist preference
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
+    localStorage.setItem('medloop_language', language);
   }, [language]);
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'en' ? 'ar' : 'en');
   };
 
-  const t = (key: TransKey): string => {
+  const t = useCallback((key: TransKey): string => {
     return translations[language][key] || key;
-  };
+  }, [language]);
 
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage, t, dir: language === 'ar' ? 'rtl' : 'ltr' }}>

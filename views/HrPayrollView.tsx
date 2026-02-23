@@ -3,14 +3,7 @@ import Layout from '../components/Layout';
 import { HrPayrollRun, HrPayslip, HrEmployee } from '../types';
 import { hrPayrollService, hrEmployeesService, hrSocialSecurityService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
-
-// ───────── helpers ─────────
-function fmtMinutes(mins: number) {
-  if (!mins) return '0';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
+import { fmtMinutes } from '../utils/formatters';
 
 function fmtMoney(amount: number) {
   return amount.toFixed(2) + ' JOD';

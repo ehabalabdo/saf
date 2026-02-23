@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, VisitData, Appointment, Gender, Priority, PrescriptionItem, Attachment, InvoiceItem, VitalSigns, LabOrder, ImagingOrder, CatalogService, CatalogMedication } from '../types';
 import { pgCatalogServices, pgCatalogMedications } from '../services/apiServices';
-import { jsPDF } from "jspdf";
 import DeviceResultsTimeline from '../components/DeviceResultsTimeline';
 
 // ===================== SOAP TAB TYPES =====================
@@ -310,7 +309,7 @@ const DoctorView: React.FC = () => {
   const handlePrintRx = async () => {
       if (!selectedPatient || prescriptions.length === 0) return;
       const settings = await SettingsService.getSettings();
-      
+      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       

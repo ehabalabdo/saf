@@ -3,19 +3,7 @@ import Layout from '../components/Layout';
 import { HrMonthlyReport, HrEmployee } from '../types';
 import { hrReportsService, hrEmployeesService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
-
-function fmtMinutes(mins: number) {
-  if (!mins) return '0';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function fmtTime(ts: string | null) {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-}
+import { fmtMinutes, fmtTime } from '../utils/formatters';
 
 const STATUS_COLORS: Record<string, string> = {
   normal: 'bg-emerald-100 text-emerald-700',
