@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ═══════════════════════════ TYPES ═══════════════════════════════ */
 interface Feature {
@@ -119,12 +120,20 @@ const automationSteps = [
 ];
 
 /* ═══════════════════════ COMPONENT ══════════════════════════════ */
+const rotatingWords = ['ذكية', 'مؤتمتة', 'دقيقة', 'متكاملة', 'بلا أخطاء'];
+
 const LandingView: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [activeCategory, setActiveCategory] = useState('clinic');
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
   const [activeFlowStep, setActiveFlowStep] = useState(0);
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    const iv = setInterval(() => setWordIndex(i => (i + 1) % rotatingWords.length), 2000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 50);
@@ -201,112 +210,129 @@ const LandingView: React.FC = () => {
         )}
       </nav>
 
-      {/* ════════════════ HERO — COMMAND CENTER ════════════════ */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0 hero-grid opacity-[0.03]" />
-        <div className="absolute top-20 -left-20 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[150px] orb-drift" />
-        <div className="absolute -bottom-20 -right-20 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[180px] orb-drift-reverse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-400/5 rounded-full blur-[100px] animate-pulse" />
+      {/* ════════════════ HERO — ROTATING HEADLINE ════════════════ */}
+      <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'linear-gradient(165deg, #0a0f1e 0%, #0d1424 35%, #101828 65%, #0f172a 100%)' }}>
+        {/* Subtle ambient glow */}
+        <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/[0.04] rounded-full blur-[200px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[500px] bg-indigo-500/[0.03] rounded-full blur-[180px] pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-32">
+          <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
 
-            {/* Left: Text */}
-            <div className="text-right hero-text-enter order-1 lg:order-1">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-bold mb-6">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                نظام تشغيل ذكي للمراكز الطبية
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.15]">
-                <span className="text-white">مستقبل الإدارة</span>
-                <br />
-                <span className="text-white">الطبية</span>{' '}
-                <span className="bg-clip-text text-transparent bg-gradient-to-l from-primary via-cyan-300 to-secondary">يبدأ من هنا</span>
+            {/* Right side — Text (RTL: appears on the right) */}
+            <div className="text-right hero-text-enter">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-8">
+                <span className="block text-white">إدارة طبية</span>
+                <span className="block h-[1.2em] relative overflow-hidden mt-2">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={rotatingWords[wordIndex]}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -30 }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute inset-0 bg-clip-text text-transparent bg-gradient-to-l from-primary via-cyan-300 to-secondary"
+                    >
+                      {rotatingWords[wordIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </h1>
 
-              <p className="text-slate-400 text-lg md:text-xl mb-8 leading-relaxed max-w-lg mr-0 ml-auto lg:ml-0">
-                منصة تشغيل ذكية تمنحك تحكماً كاملاً بمركزك الطبي — من لحظة دخول المريض حتى آخر تقرير مالي. ليس برنامجاً... بل غرفة قيادة.
+              <p className="text-slate-400 text-lg md:text-xl leading-relaxed max-w-lg mr-0 ml-auto lg:ml-0 mb-10">
+                منصة تشغيل متكاملة للمراكز الطبية الحديثة.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end lg:justify-start">
-                <a href="#contact" className="group px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:shadow-xl hover:shadow-primary/25 transition-all text-lg text-center">
-                  <i className="fa-solid fa-play ml-2 text-sm group-hover:scale-125 inline-block transition-transform"></i>
+                <a href="#contact" className="group px-8 py-4 bg-white text-slate-950 font-bold rounded-full hover:shadow-xl hover:shadow-white/10 transition-all text-base text-center">
                   اطلب عرض تجريبي
+                  <i className="fa-solid fa-arrow-left mr-2 text-xs group-hover:-translate-x-1 inline-block transition-transform"></i>
                 </a>
-                <a href="#demo-video" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all text-lg text-center">
-                  <i className="fa-solid fa-circle-play ml-2"></i>
-                  شاهد الفيديو
+                <a href="#demo-video" className="group px-8 py-4 bg-transparent border border-white/15 text-white font-bold rounded-full hover:bg-white/5 transition-all text-base text-center">
+                  شاهد كيف يعمل النظام
+                  <i className="fa-solid fa-circle-play mr-2 text-sm opacity-50 group-hover:opacity-100 transition-opacity"></i>
                 </a>
               </div>
             </div>
 
-            {/* Right: Live Dashboard Preview */}
-            <div className="hero-dashboard-enter order-2 lg:order-2">
-              <div className="relative bg-slate-900/80 border border-white/10 rounded-2xl p-5 backdrop-blur-xl shadow-2xl shadow-black/40 dashboard-tilt">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                    <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                  </div>
-                  <span className="text-[10px] text-slate-600 font-mono">MED LOOP — Control Center</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    <span className="text-[10px] text-green-400 font-mono">LIVE</span>
-                  </div>
-                </div>
+            {/* Left side — Frosted Glass Dashboard Mockup */}
+            <div className="hero-dashboard-enter hidden lg:block">
+              <div className="relative">
+                {/* Glow behind card */}
+                <div className="absolute -inset-8 bg-gradient-to-br from-primary/10 via-cyan-400/5 to-indigo-500/10 rounded-[32px] blur-2xl opacity-60" />
 
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {[
-                    { ref: patientsToday.ref, val: patientsToday.value, label: 'مرضى اليوم', icon: 'fa-users', color: 'text-cyan-400', bg: 'bg-cyan-500/10', suffix: '' },
-                    { ref: revenue.ref, val: revenue.value, label: 'الإيرادات (د.أ)', icon: 'fa-coins', color: 'text-amber-400', bg: 'bg-amber-500/10', suffix: '' },
-                    { ref: occupancy.ref, val: occupancy.value, label: 'نسبة الإشغال', icon: 'fa-gauge-high', color: 'text-emerald-400', bg: 'bg-emerald-500/10', suffix: '%' },
-                    { ref: appointmentsCount.ref, val: appointmentsCount.value, label: 'مواعيد اليوم', icon: 'fa-calendar', color: 'text-violet-400', bg: 'bg-violet-500/10', suffix: '' },
-                  ].map((s, i) => (
-                    <div key={i} ref={s.ref as React.Ref<HTMLDivElement>} className={`${s.bg} border border-white/5 rounded-xl p-3 text-center`}>
-                      <i className={`fa-solid ${s.icon} ${s.color} text-sm mb-1.5 block`}></i>
-                      <div className={`text-lg font-bold ${s.color}`}>{s.val}{s.suffix}</div>
-                      <div className="text-[9px] text-slate-500 mt-0.5">{s.label}</div>
+                <div className="relative bg-white/[0.04] border border-white/[0.08] rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/30">
+                  {/* Window chrome */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-white/10" />
+                      <div className="w-3 h-3 rounded-full bg-white/10" />
+                      <div className="w-3 h-3 rounded-full bg-white/10" />
                     </div>
-                  ))}
-                </div>
-
-                <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 mb-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-slate-500">إيرادات الأسبوع</span>
-                    <span className="text-[10px] text-emerald-400">+12.5%</span>
+                    <span className="text-[10px] text-white/20 font-mono tracking-wider">Control Center</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-[10px] text-emerald-400/60 font-mono">LIVE</span>
+                    </div>
                   </div>
-                  <div className="flex items-end gap-1 h-12">
-                    {[35, 52, 40, 65, 48, 72, 58].map((h, i) => (
-                      <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-primary/60 to-cyan-400/40 chart-bar-grow" style={{ height: `${h}%`, animationDelay: `${i * 100 + 800}ms` }} />
+
+                  {/* KPI row */}
+                  <div className="grid grid-cols-4 gap-3 mb-5">
+                    {[
+                      { ref: patientsToday.ref, val: patientsToday.value, label: 'مرضى', color: 'text-cyan-400', suffix: '' },
+                      { ref: revenue.ref, val: revenue.value, label: 'إيرادات', color: 'text-amber-400', suffix: '' },
+                      { ref: occupancy.ref, val: occupancy.value, label: 'إشغال', color: 'text-emerald-400', suffix: '%' },
+                      { ref: appointmentsCount.ref, val: appointmentsCount.value, label: 'مواعيد', color: 'text-violet-400', suffix: '' },
+                    ].map((s, i) => (
+                      <div key={i} ref={s.ref as React.Ref<HTMLDivElement>} className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-3 text-center">
+                        <div className={`text-xl font-bold ${s.color} tabular-nums`}>{s.val}{s.suffix}</div>
+                        <div className="text-[9px] text-white/25 mt-1 font-medium">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Mini chart */}
+                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] text-white/30 font-medium">إيرادات الأسبوع</span>
+                      <span className="text-[10px] text-emerald-400/70 font-mono">+12.5%</span>
+                    </div>
+                    <div className="flex items-end gap-1.5 h-14">
+                      {[35, 52, 40, 65, 48, 72, 58].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-md bg-gradient-to-t from-white/10 to-white/[0.03] chart-bar-grow" style={{ height: `${h}%`, animationDelay: `${i * 100 + 800}ms` }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Patient list */}
+                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4">
+                    <div className="text-[10px] text-white/25 mb-3 font-medium">آخر المرضى</div>
+                    {['أحمد محمد', 'سارة علي', 'خالد يوسف'].map((name, i) => (
+                      <div key={i} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0 patient-row-enter" style={{ animationDelay: `${1200 + i * 200}ms` }}>
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-[10px] text-white/40 font-bold">
+                          {name.charAt(0)}
+                        </div>
+                        <span className="text-[11px] text-white/35 flex-1 text-right">{name}</span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-medium
+                          ${i === 0 ? 'bg-emerald-500/10 text-emerald-400/70' : i === 1 ? 'bg-amber-500/10 text-amber-400/70' : 'bg-cyan-500/10 text-cyan-400/70'}`}>
+                          {i === 0 ? 'عند الطبيب' : i === 1 ? 'منتظر' : 'وصل'}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
-
-                <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3">
-                  <div className="text-[10px] text-slate-500 mb-2">آخر المرضى</div>
-                  {['أحمد محمد — عيادة 1', 'سارة علي — عيادة 2', 'خالد يوسف — عيادة 1'].map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0 patient-row-enter" style={{ animationDelay: `${1200 + i * 200}ms` }}>
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[8px] text-white font-bold">
-                        {p.charAt(0)}
-                      </div>
-                      <span className="text-[11px] text-slate-400 flex-1 text-right">{p}</span>
-                      <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${i === 0 ? 'bg-emerald-500/10 text-emerald-400' : i === 1 ? 'bg-amber-500/10 text-amber-400' : 'bg-cyan-500/10 text-cyan-400'}`}>
-                        {i === 0 ? 'عند الطبيب' : i === 1 ? 'منتظر' : 'وصل'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-cyan-400/10 to-secondary/20 rounded-2xl blur-xl -z-10 opacity-50" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <i className="fa-solid fa-chevron-down text-primary/40 text-2xl"></i>
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+            <div className="w-6 h-10 rounded-full border-2 border-white/10 flex items-start justify-center pt-2">
+              <div className="w-1 h-2 rounded-full bg-white/20" />
+            </div>
+          </motion.div>
         </div>
       </section>
 
