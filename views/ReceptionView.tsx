@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useClientSafe } from '../context/ClientContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Clinic, Patient, Gender, Priority, Appointment, Notification, Invoice } from '../types';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 interface ReceptionViewProps {
     user?: any;
@@ -310,7 +311,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
       doc.setTextColor(0);
       doc.setFontSize(11);
       doc.text(`Invoice ID: ${selectedInvoice.id}`, 15, 50);
-      doc.text(`Date: ${new Date(selectedInvoice.createdAt).toLocaleDateString()}`, pageWidth - 15, 50, { align: "right" });
+      doc.text(`Date: ${fmtDate(selectedInvoice.createdAt)}`, pageWidth - 15, 50, { align: "right" });
       
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -406,7 +407,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                             <div key={n.id} className="p-4 border-b border-slate-50 hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => { NotificationService.markAsRead(user!, n.id); loadData(); }}>
                                 <div className="flex justify-between mb-1">
                                     <span className="text-xs font-bold text-primary">{n.title}</span>
-                                    <span className="text-[10px] text-slate-400">{new Date(n.dueDate || 0).toLocaleDateString()}</span>
+                                    <span className="text-[10px] text-slate-400">{fmtDate(n.dueDate || 0)}</span>
                                 </div>
                                 <div className="text-xs text-slate-600 leading-relaxed">{n.message}</div>
                             </div>
@@ -456,7 +457,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                                     <div key={inv.id} className="flex justify-between items-center p-4 border border-slate-100 rounded-xl hover:border-primary cursor-pointer transition-colors" onClick={() => setSelectedInvoice(inv)}>
                                         <div>
                                             <div className="font-bold text-slate-800">{inv.patientName}</div>
-                                            <div className="text-xs text-slate-500">{new Date(inv.createdAt).toLocaleDateString()} • {inv.items.length} items</div>
+                                            <div className="text-xs text-slate-500">{fmtDate(inv.createdAt)} • {inv.items.length} items</div>
                                         </div>
                                         <div className="font-bold text-lg text-emerald-600">{inv.totalAmount} د.أ</div>
                                     </div>
@@ -513,7 +514,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                          {currentTime.toLocaleDateString(undefined, { weekday: 'long' })}
                      </div>
                      <div className="text-xl text-slate-400 font-light uppercase tracking-widest flex items-center gap-3">
-                         {currentTime.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                         {fmtDate(currentTime)}
                          <i className="fa-solid fa-calendar-day text-primary"></i>
                      </div>
                      

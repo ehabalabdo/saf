@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { HrMonthlyReport, HrEmployee } from '../types';
 import { hrReportsService, hrEmployeesService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
-import { fmtMinutes, fmtTime } from '../utils/formatters';
+import { fmtMinutes, fmtTime, fmtDate } from '../utils/formatters';
 
 const STATUS_COLORS: Record<string, string> = {
   normal: 'bg-emerald-100 text-emerald-700',
@@ -144,7 +144,7 @@ const HrReportsView: React.FC = () => {
                     {days.map((d: any, i: number) => (
                       <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-4 py-3 font-medium text-slate-700">
-                          {new Date(d.date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' })}
+                          {fmtDate(d.date)}
                         </td>
                         <td className="px-4 py-3 text-center font-mono text-xs">{fmtTime(d.checkIn)}</td>
                         <td className="px-4 py-3 text-center font-mono text-xs">{fmtTime(d.checkOut)}</td>

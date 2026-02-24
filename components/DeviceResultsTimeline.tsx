@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { DeviceService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { DeviceResult } from '../types';
+import { fmtDate, fmtTime } from '../utils/formatters';
 
 interface DeviceResultsTimelineProps {
   patientId: string;
@@ -54,19 +55,16 @@ const DeviceResultsTimeline: React.FC<DeviceResultsTimelineProps> = ({ patientId
     }
   };
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString('ar-JO', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
+  const formatDate = (iso: string) => fmtDate(iso);
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   // Group results by date
   const groupedResults = results.reduce<Record<string, DeviceResult[]>>((groups, result) => {
-    const dateKey = new Date(result.createdAt).toLocaleDateString();
+    const dateKey = fmtDate(result.createdAt);
     if (!groups[dateKey]) groups[dateKey] = [];
     groups[dateKey].push(result);
     return groups;

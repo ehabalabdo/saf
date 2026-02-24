@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useClient } from '../context/ClientContext';
 import { Appointment, Clinic, Patient, UserRole, User, Gender, Priority } from '../types';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 const AppointmentsView: React.FC = () => {
   const { user } = useAuth();
@@ -457,7 +458,7 @@ const AppointmentsView: React.FC = () => {
                                   {app.status === 'suggested' && app.suggestedDate && (
                                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
                                           <div className="text-blue-800 font-bold mb-1"><i className="fa-solid fa-calendar-check mr-1"></i> الموعد المقترح:</div>
-                                          <div className="text-blue-700">{new Date(app.suggestedDate).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(app.suggestedDate).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</div>
+                                          <div className="text-blue-700">{fmtDateTime(app.suggestedDate)}</div>
                                           {app.suggestedNotes && <div className="text-blue-600 text-xs mt-1">{app.suggestedNotes}</div>}
                                           <div className="text-xs text-blue-500 mt-2"><i className="fa-solid fa-hourglass-half mr-1"></i> بانتظار موافقة المريض</div>
                                       </div>

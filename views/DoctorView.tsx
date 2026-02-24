@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Patient, VisitData, Appointment, Gender, Priority, PrescriptionItem, Attachment, InvoiceItem, VitalSigns, LabOrder, ImagingOrder, CatalogService, CatalogMedication } from '../types';
 import { pgCatalogServices, pgCatalogMedications } from '../services/apiServices';
 import DeviceResultsTimeline from '../components/DeviceResultsTimeline';
+import { fmtDate } from '../utils/formatters';
 
 // ===================== SOAP TAB TYPES =====================
 type SoapTab = 'chief' | 'history' | 'exam' | 'assessment' | 'plan' | 'billing' | 'devices';
@@ -338,7 +339,7 @@ const DoctorView: React.FC = () => {
       doc.setTextColor(0);
       doc.setFontSize(11);
       doc.text(`Dr. ${user?.name || 'Doctor'}`, 15, 45);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 45, { align: "right" });
+      doc.text(`Date: ${fmtDate(Date.now())}`, pageWidth - 15, 45, { align: "right" });
       
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");

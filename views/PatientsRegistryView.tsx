@@ -6,6 +6,7 @@ import { PatientService, ClinicService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, Clinic } from '../types';
+import { fmtDate } from '../utils/formatters';
 
 const PatientsRegistryView: React.FC = () => {
   const { user } = useAuth();
@@ -159,9 +160,9 @@ const PatientsRegistryView: React.FC = () => {
                        </td>
                        <td className="px-6 py-4 text-xs text-slate-500">
                           {p.currentVisit?.visitId && p.currentVisit.date > 0 
-                            ? new Date(p.currentVisit.date).toLocaleDateString()
+                            ? fmtDate(p.currentVisit.date)
                             : p.history?.length > 0
-                              ? new Date(p.history[p.history.length - 1].date).toLocaleDateString()
+                              ? fmtDate(p.history[p.history.length - 1].date)
                               : '—'
                           }
                        </td>

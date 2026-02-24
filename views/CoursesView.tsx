@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { CourseService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { Course, CourseStudent, CourseSession, Gender, UserRole } from '../types';
+import { fmtDate } from '../utils/formatters';
 
 const CoursesView: React.FC = () => {
   const { user } = useAuth();
@@ -152,7 +153,7 @@ const CoursesView: React.FC = () => {
       // Footer
       doc.setFontSize(14);
       doc.setFont("helvetica", "normal");
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 40, 160);
+      doc.text(`Date: ${fmtDate(Date.now())}`, 40, 160);
       doc.text("Instructor Signature", width - 60, 160);
       doc.line(width - 80, 155, width - 30, 155);
 
@@ -264,7 +265,7 @@ const CoursesView: React.FC = () => {
                                           <div className="text-xs text-slate-400">{s.phone}</div>
                                       </td>
                                       <td className="px-6 py-4 font-medium">{s.courseName}</td>
-                                      <td className="px-6 py-4 text-xs">{new Date(s.enrollmentDate).toLocaleDateString()}</td>
+                                      <td className="px-6 py-4 text-xs">{fmtDate(s.enrollmentDate)}</td>
                                       <td className="px-6 py-4">
                                           <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${s.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : s.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                               {s.paymentStatus} ({s.totalFees > 0 ? Math.round((s.paidAmount/s.totalFees)*100) : 0}%)

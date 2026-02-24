@@ -5,6 +5,7 @@ import { ImplantService, ClinicService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { UserRole, ImplantItem, ImplantOrder, ImplantOrderStatus, Clinic } from '../types';
+import { fmtDate } from '../utils/formatters';
 
 const ImplantView: React.FC = () => {
   const { user } = useAuth();
@@ -219,7 +220,7 @@ const ImplantView: React.FC = () => {
                                               </td>
                                               <td className="px-4 py-3 font-bold">{order.quantity}</td>
                                               <td className="px-4 py-3 text-center"><StatusBadge status={order.status} /></td>
-                                              <td className="px-4 py-3 text-xs">{new Date(order.requiredDate).toLocaleDateString()}</td>
+                                              <td className="px-4 py-3 text-xs">{fmtDate(order.requiredDate)}</td>
                                               <td className="px-4 py-3 text-end">
                                                   {isManager && order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
                                                       <div className="flex justify-end gap-1">

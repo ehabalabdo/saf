@@ -5,6 +5,7 @@ import { DeviceService, PatientService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { DeviceResult, Patient, DeviceResultStatus } from '../types';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 type TabFilter = 'pending' | 'matched' | 'all';
 
@@ -110,8 +111,7 @@ const DeviceResultsView: React.FC = () => {
   };
 
   const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString('ar-JO') + ' ' + d.toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' });
+    return fmtDateTime(iso);
   };
 
   if (loading) {

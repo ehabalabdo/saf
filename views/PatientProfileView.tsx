@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, Clinic, UserRole } from '../types';
 import DeviceResultsTimeline from '../components/DeviceResultsTimeline';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 const PatientProfileView: React.FC = () => {
   const { id } = useParams();
@@ -451,10 +452,10 @@ const PatientProfileView: React.FC = () => {
                            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                <div className="flex-1 w-full">
                                    <div className={`text-sm font-bold ${idx === 0 ? 'text-primary' : 'text-slate-600'}`}>
-                                       {new Date(visit.date).toLocaleDateString()}
+                                       {fmtDate(visit.date)}
                                    </div>
                                    <div className="text-xs text-slate-400 mb-2">
-                                       {new Date(visit.date).toLocaleTimeString()} • {getClinicName(visit.clinicId)}
+                                       {new Date(visit.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {getClinicName(visit.clinicId)}
                                    </div>
                                    
                                    {/* Clinical Summary Card */}
@@ -753,7 +754,7 @@ const PatientProfileView: React.FC = () => {
                                    </div>
                                    <div className="flex justify-between">
                                        <span className="text-slate-500">Date</span>
-                                       <span className="text-slate-700">{new Date(patient.currentVisit.date).toLocaleString()}</span>
+                                       <span className="text-slate-700">{fmtDateTime(patient.currentVisit.date)}</span>
                                    </div>
                                    <div className="flex justify-between">
                                        <span className="text-slate-500">Priority</span>

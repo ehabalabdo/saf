@@ -5,6 +5,7 @@ import { ClinicService, PatientService, AppointmentService, BillingService } fro
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, Clinic, Appointment, Invoice, VisitData, UserRole } from '../types';
+import { fmtDate } from '../utils/formatters';
 
 type DateFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 
@@ -235,8 +236,7 @@ const ClinicHistoryView: React.FC = () => {
 
   const formatDate = (ts: number) => {
     if (!ts) return '-';
-    const d = new Date(ts);
-    return d.toLocaleDateString(isAr ? 'ar-JO' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return fmtDate(ts);
   };
 
   const formatTime = (ts: number) => {

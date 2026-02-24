@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import { HrEmployee, HrDeduction, HrWarning, HrNotification } from '../types';
 import { hrEmployeesService, hrDeductionsService, hrWarningsService, hrNotificationsService } from '../services/hrApiServices';
 import { useLanguage } from '../context/LanguageContext';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 type Tab = 'deductions' | 'warnings' | 'notifications';
 
@@ -280,7 +281,7 @@ const HrManagerActionsView: React.FC = () => {
                     <td className="px-4 py-3 font-bold text-slate-800">{d.employeeName || empName(d.employeeId)}</td>
                     <td className="text-center px-3 py-3 font-mono font-bold text-red-600">{d.amount.toFixed(2)} JOD</td>
                     <td className="px-3 py-3 text-slate-500 text-xs">{d.reason || '—'}</td>
-                    <td className="text-center px-3 py-3 text-slate-400 text-xs">{new Date(d.createdAt).toLocaleDateString()}</td>
+                    <td className="text-center px-3 py-3 text-slate-400 text-xs">{fmtDate(d.createdAt)}</td>
                     <td className="px-3 py-3 text-center">
                       <button onClick={() => handleDeleteDeduction(d.id)} className="text-red-400 hover:text-red-600 text-xs">
                         <i className="fa-solid fa-trash"></i>
@@ -385,7 +386,7 @@ const HrManagerActionsView: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-3 py-3 text-slate-500 text-xs">{w.reason || '—'}</td>
-                    <td className="text-center px-3 py-3 text-slate-400 text-xs">{new Date(w.issuedAt).toLocaleDateString()}</td>
+                    <td className="text-center px-3 py-3 text-slate-400 text-xs">{fmtDate(w.issuedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -468,7 +469,7 @@ const HrManagerActionsView: React.FC = () => {
                     {!n.isRead && <span className="px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full text-[10px] font-bold">{isAr ? 'جديد' : 'NEW'}</span>}
                   </div>
                   <p className="text-sm text-slate-600">{n.message}</p>
-                  <p className="text-xs text-slate-400 mt-1">{new Date(n.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-slate-400 mt-1">{fmtDateTime(n.createdAt)}</p>
                 </div>
               </div>
             ))}

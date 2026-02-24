@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Client, SuperAdmin } from '../types';
 import { pgClientsService, pgSuperAdmin } from '../services/apiServices';
+import { fmtDate } from '../utils/formatters';
 
 const SuperAdminView: React.FC = () => {
   const navigate = useNavigate();
@@ -177,7 +178,7 @@ const SuperAdminView: React.FC = () => {
 
   const formatDate = (d: string | null) => {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('ar-JO', { year: 'numeric', month: 'short', day: 'numeric' });
+    return fmtDate(d);
   };
 
   const getRemainingDays = (dateStr: string | null) => {

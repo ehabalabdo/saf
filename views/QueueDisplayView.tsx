@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { ClinicService, PatientService } from '../services/services';
 import { Patient, Clinic, UserRole } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { fmtDate } from '../utils/formatters';
 
 /**
  * QueueDisplayView
@@ -148,7 +149,7 @@ const QueueDisplayView: React.FC = () => {
              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
            </div>
            <div className="text-slate-500 text-xs uppercase tracking-widest mt-1">
-             {currentTime.toLocaleDateString()}
+             {fmtDate(currentTime)}
            </div>
         </div>
       </header>

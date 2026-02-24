@@ -6,6 +6,7 @@ import { Patient, VisitData, Clinic, Appointment } from '../types';
 import { pgPatients, pgAppointments } from '../services/apiServices';
 import { ClinicService, AppointmentService } from '../services/services';
 import { getCurrentClientId } from '../context/ClientContext';
+import { fmtDate } from '../utils/formatters';
 
 const PatientDashboardView: React.FC = () => {
   const navigate = useNavigate();
@@ -382,7 +383,7 @@ const PatientDashboardView: React.FC = () => {
                   <div key={idx} className="border-l-4 border-primary pl-4 py-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-bold text-slate-800">
-                        {new Date(visit.date).toLocaleDateString('ar-EG')}
+                        {fmtDate(visit.date)}
                       </div>
                       <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                         <i className="fa-solid fa-check-circle"></i> مكتمل
@@ -523,11 +524,11 @@ const PatientDashboardView: React.FC = () => {
                         {app.status === 'suggested' ? (
                           <>
                             <div className="text-xs text-red-500 line-through mb-1">
-                              الموعد الأصلي: {new Date(app.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(app.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                              الموعد الأصلي: {fmtDate(app.date)} - {new Date(app.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
                             </div>
                             <div className="font-bold text-blue-800">
                               <i className="fa-solid fa-arrow-left ml-1 text-xs"></i>
-                              الموعد المقترح: {app.suggestedDate ? new Date(app.suggestedDate).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                              الموعد المقترح: {app.suggestedDate ? fmtDate(app.suggestedDate) : ''}
                             </div>
                             <div className="text-sm text-blue-600 mt-0.5">
                               <i className="fa-solid fa-clock ml-1"></i>
@@ -541,7 +542,7 @@ const PatientDashboardView: React.FC = () => {
                         ) : (
                           <>
                             <div className="font-bold text-slate-800">
-                              {new Date(app.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                              {fmtDate(app.date)}
                             </div>
                             <div className="text-sm text-slate-500 mt-0.5">
                               <i className="fa-solid fa-clock ml-1"></i>

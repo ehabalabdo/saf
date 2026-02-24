@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { api } from '../src/api';
 import { Device, DeviceType, DeviceConnectionType, Clinic } from '../types';
 import { ClinicService } from '../services/services';
+import { fmtDate, fmtDateTime } from '../utils/formatters';
 
 interface ApiKey {
   id: string;
@@ -546,7 +547,7 @@ const DeviceManagementView: React.FC = () => {
                         </div>
                         <div>
                           <span className="font-mono text-sm font-bold text-slate-700">{conn.remoteAddr}</span>
-                          <div className="text-[11px] text-slate-400">Connected: {new Date(conn.connectedAt).toLocaleString()}</div>
+                          <div className="text-[11px] text-slate-400">Connected: {fmtDateTime(conn.connectedAt)}</div>
                         </div>
                       </div>
                       <div className="text-xs font-bold text-slate-500">
@@ -706,8 +707,8 @@ const DeviceManagementView: React.FC = () => {
                         <div>
                           <span className="font-bold text-slate-700 text-sm">{k.label}</span>
                           <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-0.5">
-                            <span>أُنشئ: {new Date(k.created_at).toLocaleDateString('ar')}</span>
-                            {k.last_used_at && <span>آخر استخدام: {new Date(k.last_used_at).toLocaleDateString('ar')}</span>}
+                            <span>أُنشئ: {fmtDate(k.created_at)}</span>
+                            {k.last_used_at && <span>آخر استخدام: {fmtDate(k.last_used_at)}</span>}
                           </div>
                         </div>
                       </div>

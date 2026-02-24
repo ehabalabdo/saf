@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { DentalLabService, AuthService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { LabCase, UserRole, User } from '../types';
+import { fmtDate } from '../utils/formatters';
 
 const PREDEFINED_CASE_TYPES = [
     'Crown (Zirconia)',
@@ -200,7 +201,7 @@ const DentalLabView: React.FC = () => {
                                   </td>
                                   <td className="px-6 py-4 font-medium">{c.caseType}</td>
                                   <td className="px-6 py-4 text-center"><StatusBadge status={c.status} /></td>
-                                  <td className="px-6 py-4 text-xs font-bold text-slate-500">{new Date(c.dueDate).toLocaleDateString()}</td>
+                                  <td className="px-6 py-4 text-xs font-bold text-slate-500">{fmtDate(c.dueDate)}</td>
                                   <td className="px-6 py-4 text-end">
                                       <button onClick={() => setSelectedCase(c)} className="text-slate-400 hover:text-cyan-600 transition-colors p-2">
                                           <i className="fa-solid fa-eye"></i>
@@ -239,7 +240,7 @@ const DentalLabView: React.FC = () => {
                               <option value="">-- Choose Patient Visit --</option>
                               {eligibleVisits.map(v => (
                                   <option key={v.visitId} value={v.visitId}>
-                                      {v.patientName} - {new Date(v.date).toLocaleDateString()}
+                                      {v.patientName} - {fmtDate(v.date)}
                                   </option>
                               ))}
                           </select>
@@ -311,7 +312,7 @@ const DentalLabView: React.FC = () => {
                   <div className="p-5 bg-slate-800 text-white flex justify-between items-center shrink-0">
                       <div>
                           <h3 className="font-bold text-lg">Case #{selectedCase.id.split('_')[1]}</h3>
-                          <p className="text-xs text-slate-400">Created: {new Date(selectedCase.createdAt).toLocaleDateString()}</p>
+                          <p className="text-xs text-slate-400">Created: {fmtDate(selectedCase.createdAt)}</p>
                       </div>
                       <button onClick={() => setSelectedCase(null)}><i className="fa-solid fa-xmark"></i></button>
                   </div>
@@ -326,7 +327,7 @@ const DentalLabView: React.FC = () => {
                           <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                               <div className="text-xs font-bold text-slate-400 uppercase mb-2">Job Details</div>
                               <div className="font-bold text-lg text-slate-800">{selectedCase.caseType}</div>
-                              <div className="text-sm text-slate-500">Due: <span className="text-red-500 font-bold">{new Date(selectedCase.dueDate).toLocaleDateString()}</span></div>
+                              <div className="text-sm text-slate-500">Due: <span className="text-red-500 font-bold">{fmtDate(selectedCase.dueDate)}</span></div>
                           </div>
                       </div>
 

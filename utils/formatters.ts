@@ -9,9 +9,23 @@ export function fmtTime(ts: string | null): string {
   return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
-/** Format a date string to readable format (e.g., "23 Feb 2026") */
-export function fmtDate(d: string): string {
-  return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+/** Format a date string/number to DD/MM/YYYY (e.g., "23/02/2026") */
+export function fmtDate(d: string | number): string {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return '—';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+/** Format a date string/number to DD/MM/YYYY + time (e.g., "23/02/2026 02:30 PM") */
+export function fmtDateTime(d: string | number): string {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return '—';
+  return `${fmtDate(d)} ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
 }
 
 /** Format minutes to hours + minutes (e.g., "2h 30m") */
