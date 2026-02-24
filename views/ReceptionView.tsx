@@ -547,10 +547,20 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                          SYS.TIME.SYNC
                      </div>
                      
-                     <div className="flex items-baseline gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-500 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]">
-                         <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none" style={{ fontFamily: "'Orbitron', sans-serif" }}>{hh}</span>
-                         <span className="text-5xl md:text-7xl font-light text-cyan-400 animate-pulse leading-none mb-4 md:mb-8">:</span>
-                         <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none" style={{ fontFamily: "'Orbitron', sans-serif" }}>{mm}</span>
+                     <div className="flex items-baseline gap-2 text-cyan-100 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+                         <span className="text-7xl md:text-[8rem] tracking-tighter leading-none relative" style={{ fontFamily: "'Share Tech Mono', monospace", textShadow: '0 0 20px rgba(34,211,238,0.8), 0 0 40px rgba(34,211,238,0.4)' }}>
+                             {hh}
+                             {/* Glitch Effect Layer */}
+                             <span className="absolute top-0 left-[2px] -z-10 text-cyan-500 opacity-70 animate-[glitch_3s_infinite]">{hh}</span>
+                             <span className="absolute top-0 -left-[2px] -z-10 text-blue-500 opacity-70 animate-[glitch_3s_infinite_reverse]">{hh}</span>
+                         </span>
+                         <span className="text-5xl md:text-7xl font-light text-cyan-400 animate-pulse leading-none mb-4 md:mb-8" style={{ textShadow: '0 0 15px rgba(34,211,238,0.8)' }}>:</span>
+                         <span className="text-7xl md:text-[8rem] tracking-tighter leading-none relative" style={{ fontFamily: "'Share Tech Mono', monospace", textShadow: '0 0 20px rgba(34,211,238,0.8), 0 0 40px rgba(34,211,238,0.4)' }}>
+                             {mm}
+                             {/* Glitch Effect Layer */}
+                             <span className="absolute top-0 left-[2px] -z-10 text-cyan-500 opacity-70 animate-[glitch_3s_infinite]">{mm}</span>
+                             <span className="absolute top-0 -left-[2px] -z-10 text-blue-500 opacity-70 animate-[glitch_3s_infinite_reverse]">{mm}</span>
+                         </span>
                      </div>
                      
                      {/* High-Tech Seconds Progress */}
@@ -800,6 +810,17 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
       </div>
       
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 1px) }
+            40% { transform: translate(-1px, -1px) }
+            60% { transform: translate(2px, 1px) }
+            80% { transform: translate(1px, -1px) }
+            100% { transform: translate(0) }
+        }
+        
         .input-modern { width: 100%; padding: 0.875rem 1.25rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 1.25rem; font-size: 0.95rem; transition: all 0.2s; }
         .input-modern:focus { border-color: #0d9488; box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); outline: none; }
         .animate-fade-in-down { animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
