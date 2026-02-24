@@ -55,10 +55,27 @@ const QueueDisplayView: React.FC = () => {
     setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = langCode;
-        utterance.rate = 0.9;
+        utterance.rate = 0.8; // Slightly slower for better clarity
+        
+        // Try to find a specific voice for the language
+        const voices = window.speechSynthesis.getVoices();
+        const targetVoice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+        if (targetVoice) {
+            utterance.voice = targetVoice;
+        }
+        
         window.speechSynthesis.speak(utterance);
     }, 600);
   };
+
+  // Ensure voices are loaded (some browsers load them asynchronously)
+  useEffect(() => {
+      if (window.speechSynthesis) {
+          window.speechSynthesis.onvoiceschanged = () => {
+              console.log("TTS Voices loaded");
+          };
+      }
+  }, []);
 
   // Load clinic names once (separate from subscription to avoid infinite loop)
   useEffect(() => {
