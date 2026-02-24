@@ -505,18 +505,25 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
                  
                  {/* EKG Heartbeat Line Animation */}
-                 <div className="absolute bottom-0 left-0 w-full h-32 opacity-20">
+                 <div className="absolute bottom-0 left-0 w-full h-32 opacity-30">
                      <svg viewBox="0 0 1000 100" className="w-full h-full" preserveAspectRatio="none">
                          <path 
                              d="M0,50 L200,50 L230,20 L260,80 L290,50 L500,50 L530,20 L560,80 L590,50 L800,50 L830,20 L860,80 L890,50 L1000,50" 
                              fill="none" 
-                             stroke="#2dd4bf" 
-                             strokeWidth="2" 
+                             stroke="url(#ekg-gradient)" 
+                             strokeWidth="3" 
                              strokeLinecap="round" 
                              strokeLinejoin="round"
                              className="animate-[dash_3s_linear_infinite]"
                              style={{ strokeDasharray: 1000, strokeDashoffset: 1000 }}
                          />
+                         <defs>
+                             <linearGradient id="ekg-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                 <stop offset="0%" stopColor="rgba(45,212,191,0)" />
+                                 <stop offset="50%" stopColor="rgba(45,212,191,1)" />
+                                 <stop offset="100%" stopColor="rgba(45,212,191,0)" />
+                             </linearGradient>
+                         </defs>
                      </svg>
                      <style>{`
                          @keyframes dash {
@@ -527,8 +534,9 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                  </div>
                  
                  {/* Floating Medical Crosses */}
-                 <div className="absolute top-10 right-[30%] text-teal-500/10 animate-[bounce_4s_ease-in-out_infinite]"><i className="fa-solid fa-plus text-4xl"></i></div>
-                 <div className="absolute bottom-10 left-[40%] text-blue-500/10 animate-[bounce_5s_ease-in-out_infinite_reverse]"><i className="fa-solid fa-plus text-2xl"></i></div>
+                 <div className="absolute top-10 right-[30%] text-teal-500/20 animate-[bounce_4s_ease-in-out_infinite]"><i className="fa-solid fa-plus text-4xl drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]"></i></div>
+                 <div className="absolute bottom-10 left-[40%] text-blue-500/20 animate-[bounce_5s_ease-in-out_infinite_reverse]"><i className="fa-solid fa-plus text-2xl drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"></i></div>
+                 <div className="absolute top-20 left-[20%] text-emerald-500/10 animate-[pulse_3s_ease-in-out_infinite]"><i className="fa-solid fa-heart-pulse text-3xl"></i></div>
              </div>
              
              {/* Main Flex Container */}
@@ -538,53 +546,64 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                  <div className="flex flex-col items-center md:items-start">
                      <div className="flex items-baseline gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300 drop-shadow-lg">
                          <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none">{hh}</span>
-                         <span className="text-5xl md:text-7xl font-light text-teal-400 animate-pulse leading-none mb-4 md:mb-8">:</span>
+                         <span className="text-5xl md:text-7xl font-light text-teal-400 animate-pulse leading-none mb-4 md:mb-8 drop-shadow-[0_0_15px_rgba(45,212,191,0.8)]">:</span>
                          <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none">{mm}</span>
                      </div>
                      <div className="flex items-center gap-4 mt-2 md:mt-4 w-full max-w-[280px]">
-                         <div className="text-teal-400 font-mono text-lg md:text-xl font-bold w-8">{String(ss).padStart(2, '0')}</div>
+                         <div className="text-teal-400 font-mono text-lg md:text-xl font-bold w-8 drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]">{String(ss).padStart(2, '0')}</div>
                          <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full overflow-hidden relative">
                              <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(45,212,191,0.5)]" style={{width: `${(ss / 60) * 100}%`, transition: 'width 1s linear'}}></div>
                              {/* Pulse dot at the end of the progress bar */}
-                             <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_8px_white] animate-ping" style={{left: `calc(${(ss / 60) * 100}% - 4px)`, transition: 'left 1s linear'}}></div>
+                             <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_12px_white] animate-ping" style={{left: `calc(${(ss / 60) * 100}% - 6px)`, transition: 'left 1s linear'}}></div>
                          </div>
                      </div>
                  </div>
 
                  {/* Right Side: Date & Status */}
                  <div className="hidden md:flex flex-col items-end text-right z-20">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4 md:mb-6">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4 md:mb-6 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                         <span className="h-2 w-2 bg-emerald-500 rounded-full animate-ping"></span>
                         <span className="text-emerald-400 font-bold text-[10px] md:text-xs uppercase tracking-widest">{t('system_name')} ONLINE</span>
                      </div>
                      
-                     <div className="text-3xl md:text-5xl font-black text-white tracking-tight mb-1 md:mb-2 drop-shadow-md">
+                     <div className="text-3xl md:text-5xl font-black text-white tracking-tight mb-1 md:mb-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
                          {dayName}
                      </div>
-                     <div className="text-lg md:text-2xl text-slate-400 font-light uppercase tracking-widest flex items-center gap-3">
+                     <div className="text-lg md:text-2xl text-slate-400 font-light uppercase tracking-widest flex items-center gap-3 drop-shadow-md">
                          {fmtDate(currentTime)}
                      </div>
                      
                      {/* Decorative Stat Pills */}
                      <div className="flex gap-3 mt-6 md:mt-8">
-                         <div className="bg-white/5 hover:bg-white/10 transition-colors border border-white/10 pl-3 pr-5 py-2 rounded-2xl text-sm text-slate-200 flex items-center gap-3 backdrop-blur-md shadow-xl">
-                            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400"><i className="fa-solid fa-users"></i></div>
+                         <div className="bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-teal-500/30 pl-3 pr-5 py-2 rounded-2xl text-sm text-slate-200 flex items-center gap-3 backdrop-blur-md shadow-[0_0_15px_rgba(45,212,191,0.15)]">
+                            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.5)]"><i className="fa-solid fa-users"></i></div>
                             <div className="flex flex-col items-start leading-none">
-                                <span className="font-black text-white text-lg">{activeQueue.length}</span>
-                                <span className="text-[9px] uppercase tracking-wider opacity-60">Waiting</span>
+                                <span className="font-black text-white text-lg drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{activeQueue.length}</span>
+                                <span className="text-[9px] uppercase tracking-wider text-teal-400/80">Waiting</span>
                             </div>
                          </div>
-                         <div className="bg-white/5 hover:bg-white/10 transition-colors border border-white/10 pl-3 pr-5 py-2 rounded-2xl text-sm text-slate-200 flex items-center gap-3 backdrop-blur-md shadow-xl">
-                            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400"><i className="fa-solid fa-user-doctor"></i></div>
+                         <div className="bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-blue-500/30 pl-3 pr-5 py-2 rounded-2xl text-sm text-slate-200 flex items-center gap-3 backdrop-blur-md shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]"><i className="fa-solid fa-user-doctor"></i></div>
                             <div className="flex flex-col items-start leading-none">
-                                <span className="font-black text-white text-lg">{clinics.length}</span>
-                                <span className="text-[9px] uppercase tracking-wider opacity-60">Clinics</span>
+                                <span className="font-black text-white text-lg drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{clinics.length}</span>
+                                <span className="text-[9px] uppercase tracking-wider text-blue-400/80">Clinics</span>
                             </div>
                          </div>
                      </div>
                  </div>
 
              </div>
+             
+             {/* Scanning Laser Effect */}
+             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-400/50 to-transparent animate-[scan_4s_ease-in-out_infinite] shadow-[0_0_15px_rgba(45,212,191,0.8)] pointer-events-none"></div>
+             <style>{`
+                 @keyframes scan {
+                     0%, 100% { top: 0; opacity: 0; }
+                     10% { opacity: 1; }
+                     90% { opacity: 1; }
+                     50% { top: 100%; }
+                 }
+             `}</style>
         </div>
 
         {/* ... [Rest of the file remains same] ... */}
