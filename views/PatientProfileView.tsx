@@ -455,7 +455,7 @@ const PatientProfileView: React.FC = () => {
                                        {fmtDate(visit.date)}
                                    </div>
                                    <div className="text-xs text-slate-400 mb-2">
-                                       {new Date(visit.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {getClinicName(visit.clinicId)}
+                                       {new Date(visit.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} • {getClinicName(visit.clinicId)}
                                    </div>
                                    
                                    {/* Clinical Summary Card */}

@@ -146,7 +146,7 @@ const QueueDisplayView: React.FC = () => {
 
         <div className="text-right">
            <div className="text-3xl font-mono font-bold text-primary">
-             {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+             {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
            </div>
            <div className="text-slate-500 text-xs uppercase tracking-widest mt-1">
              {fmtDate(currentTime)}
@@ -232,7 +232,7 @@ const QueueDisplayView: React.FC = () => {
                    </div>
 
                    <div className="text-end font-mono text-slate-400">
-                      {new Date(p.currentVisit.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(p.currentVisit.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                    </div>
                 </div>
               ))}

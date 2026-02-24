@@ -298,12 +298,12 @@ const CoursesView: React.FC = () => {
                         sessions.sort((a,b) => a.date - b.date).map(sess => (
                             <div key={sess.id} className="flex items-center gap-4 p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                                 <div className="flex flex-col items-center justify-center w-16 h-16 bg-slate-100 rounded-lg text-slate-600">
-                                    <span className="text-xs font-bold uppercase">{new Date(sess.date).toLocaleDateString(undefined, {month:'short'})}</span>
+                                    <span className="text-xs font-bold uppercase">{new Date(sess.date).toLocaleDateString('en-GB', {month:'short'})}</span>
                                     <span className="text-xl font-bold text-slate-800">{new Date(sess.date).getDate()}</span>
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="font-bold text-slate-800">{sess.topic}</h4>
-                                    <div className="text-sm text-slate-500">{sess.courseName} • {new Date(sess.date).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'})}</div>
+                                    <div className="text-sm text-slate-500">{sess.courseName} • {new Date(sess.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-slate-400 uppercase">Instructor</div>

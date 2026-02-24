@@ -242,7 +242,7 @@ const ClinicHistoryView: React.FC = () => {
   const formatTime = (ts: number) => {
     if (!ts) return '';
     const d = new Date(ts);
-    return d.toLocaleTimeString(isAr ? 'ar-JO' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatCurrency = (amount: number) => {

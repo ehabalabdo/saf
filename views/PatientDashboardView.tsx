@@ -286,7 +286,7 @@ const PatientDashboardView: React.FC = () => {
               <div className="text-right">
                 <div className="text-sm opacity-75">وقت الوصول</div>
                 <div className="text-xl font-bold font-mono">
-                  {new Date(patient.currentVisit.date).toLocaleTimeString('ar-EG', { 
+                  {new Date(patient.currentVisit.date).toLocaleTimeString('en-GB', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                   })}
@@ -524,7 +524,7 @@ const PatientDashboardView: React.FC = () => {
                         {app.status === 'suggested' ? (
                           <>
                             <div className="text-xs text-red-500 line-through mb-1">
-                              الموعد الأصلي: {fmtDate(app.date)} - {new Date(app.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                              الموعد الأصلي: {fmtDate(app.date)} - {new Date(app.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                             </div>
                             <div className="font-bold text-blue-800">
                               <i className="fa-solid fa-arrow-left ml-1 text-xs"></i>
@@ -532,7 +532,7 @@ const PatientDashboardView: React.FC = () => {
                             </div>
                             <div className="text-sm text-blue-600 mt-0.5">
                               <i className="fa-solid fa-clock ml-1"></i>
-                              {app.suggestedDate ? new Date(app.suggestedDate).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              {app.suggestedDate ? new Date(app.suggestedDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
                               {' — '}
                               <i className="fa-solid fa-hospital ml-1"></i>
                               {getClinicName(app.clinicId)}
@@ -546,7 +546,7 @@ const PatientDashboardView: React.FC = () => {
                             </div>
                             <div className="text-sm text-slate-500 mt-0.5">
                               <i className="fa-solid fa-clock ml-1"></i>
-                              {new Date(app.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(app.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                               {' — '}
                               <i className="fa-solid fa-hospital ml-1"></i>
                               {getClinicName(app.clinicId)}

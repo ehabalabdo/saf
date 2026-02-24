@@ -625,7 +625,7 @@ const DoctorView: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                      {appointments.map(app => (
                         <div key={app.id} className="flex gap-2 items-center text-xs p-2 rounded hover:bg-slate-50">
-                            <span className="font-bold text-slate-900 bg-slate-200 px-1.5 rounded">{new Date(app.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                            <span className="font-bold text-slate-900 bg-slate-200 px-1.5 rounded">{new Date(app.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>
                             <span className="truncate text-slate-600">{app.patientName}</span>
                         </div>
                      ))}

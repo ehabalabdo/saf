@@ -535,7 +535,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                         <span className="text-emerald-500 font-bold text-xs uppercase tracking-[0.2em]">{t('system_name')} ONLINE</span>
                      </div>
                      <div className="text-4xl font-black text-white tracking-tight">
-                         {currentTime.toLocaleDateString(undefined, { weekday: 'long' })}
+                         {currentTime.toLocaleDateString('en-GB', { weekday: 'long' })}
                      </div>
                      <div className="text-xl text-slate-400 font-light uppercase tracking-widest flex items-center gap-3">
                          {fmtDate(currentTime)}
@@ -683,7 +683,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                                             </div>
                                         </div>
                                         <div className="text-end shrink-0">
-                                            <div className="text-[12px] font-bold text-slate-900">{new Date(p.currentVisit.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                                            <div className="text-[12px] font-bold text-slate-900">{new Date(p.currentVisit.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</div>
                                             <div className={`text-[9px] font-extrabold uppercase px-3 py-1 rounded-full mt-2 inline-block ${p.currentVisit.status === 'in-progress' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-amber-100 text-amber-600'}`}>{p.currentVisit.status}</div>
                                         </div>
                                     </div>
@@ -716,8 +716,8 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                                                 <i className="fa-solid fa-chalkboard-user text-2xl"></i>
                                             ) : (
                                                 <>
-                                                    <span className="text-[10px] font-bold opacity-60 uppercase">{new Date(app.date).toLocaleDateString([], {month:'short'})}</span>
-                                                    <span className="font-bold text-sm leading-tight">{new Date(app.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                                    <span className="text-[10px] font-bold opacity-60 uppercase">{new Date(app.date).toLocaleDateString('en-GB', {month:'short'})}</span>
+                                                    <span className="font-bold text-sm leading-tight">{new Date(app.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>
                                                 </>
                                             )}
                                         </div>
@@ -725,7 +725,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                                             <div className="font-bold text-slate-800 truncate text-lg">{app.patientName}</div>
                                             <div className="text-[10px] text-slate-400 italic truncate font-medium">
                                                 {app.isClass ? (
-                                                    <span>{new Date(app.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} • {app.reason}</span>
+                                                    <span>{new Date(app.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})} • {app.reason}</span>
                                                 ) : app.reason}
                                             </div>
                                         </div>

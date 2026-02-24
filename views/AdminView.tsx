@@ -225,7 +225,7 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
             .filter(inv => inv.status === 'paid' && inv.createdAt >= d.getTime() && inv.createdAt < nextD.getTime())
             .reduce((acc, curr) => acc + curr.totalAmount, 0);
             
-          days.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
+          days.push(d.toLocaleDateString('en-GB', { weekday: 'short' }));
           values.push(sum);
       }
       

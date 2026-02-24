@@ -393,13 +393,13 @@ const AppointmentsView: React.FC = () => {
                           <div key={app.id} className={`flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-lg border transition-colors bg-white group ${activeTab === 'history' ? 'border-gray-100 opacity-75 grayscale-[0.5] hover:grayscale-0' : activeTab === 'pending' ? 'border-amber-200 hover:border-amber-300 bg-amber-50/30' : 'border-gray-100 hover:border-blue-200'}`}>
                               <div className="flex items-center gap-4">
                                   <div className={`flex flex-col items-center justify-center w-16 h-16 rounded border text-slate-600 ${app.status === 'checked-in' ? 'bg-green-50 border-green-200' : 'bg-slate-50 border-gray-200'}`}>
-                                      <span className="text-xs uppercase font-bold">{new Date(app.date).toLocaleDateString([], { month: 'short' })}</span>
+                                      <span className="text-xs uppercase font-bold">{new Date(app.date).toLocaleDateString('en-GB', { month: 'short' })}</span>
                                       <span className="text-xl font-bold text-slate-800">{new Date(app.date).getDate()}</span>
                                   </div>
                                   <div>
                                       <h3 className="font-bold text-slate-800 text-lg">{app.patientName}</h3>
                                       <div className="text-sm text-slate-500 flex flex-wrap gap-3">
-                                          <span className="flex items-center gap-1"><i className="fa-regular fa-clock"></i> {new Date(app.date).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
+                                          <span className="flex items-center gap-1"><i className="fa-regular fa-clock"></i> {new Date(app.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}</span>
                                           <span className="flex items-center gap-1"><i className="fa-solid fa-hospital"></i> {getClinicName(app.clinicId)}</span>
                                           <span className="flex items-center gap-1"><i className="fa-solid fa-user-doctor"></i> {getDoctorName(app.doctorId)}</span>
                                       </div>
