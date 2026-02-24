@@ -495,39 +495,32 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
              </div>
         )}
 
-        {/* 1. FUTURISTIC MEDICAL HOLOGRAPHIC CLOCK WIDGET */}
-        <div dir="ltr" className="relative rounded-[2rem] md:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(8,145,178,0.2)] bg-[#0a0f16] border border-cyan-900/50 h-[220px] md:h-[280px] group select-none flex items-center">
+        {/* 1. CLEAN & MINIMALIST CLOCK WIDGET */}
+        <div dir="ltr" className="relative rounded-[2rem] md:rounded-3xl overflow-hidden shadow-sm bg-white border border-slate-100 h-[220px] md:h-[280px] group select-none flex items-center">
              
-             {/* Holographic Background & Grid */}
-             <div className="absolute inset-0 pointer-events-none">
-                 {/* Deep Space Glow */}
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[150%] bg-cyan-500/10 blur-[120px] rounded-full"></div>
+             {/* Soft Minimalist Background */}
+             <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                 <div className="absolute -top-[50%] -right-[20%] w-[70%] h-[200%] bg-slate-50/50 rounded-full transform rotate-12"></div>
+                 <div className="absolute -bottom-[50%] -left-[10%] w-[50%] h-[150%] bg-primary/5 rounded-full blur-3xl"></div>
                  
-                 {/* Hex Grid Overlay */}
-                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='103.92304845413263' viewBox='0 0 60 103.92304845413263' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 103.92304845413263L0 86.60254037844386L0 51.96152422706631L30 34.64101615137755L60 51.96152422706631L60 86.60254037844386Z' fill='none' stroke='%2306b6d4' stroke-width='1'/%3E%3Cpath d='M30 51.96152422706631L0 34.64101615137755L0 0L30 -17.32050807568877L60 0L60 34.64101615137755Z' fill='none' stroke='%2306b6d4' stroke-width='1'/%3E%3C/svg%3E")`, backgroundSize: '60px 103.9px' }}></div>
-                 
-                 {/* Animated Medical Rings (Right Side Background) */}
-                 <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-64 h-64 opacity-20">
-                     <div className="absolute inset-0 border-2 border-dashed border-cyan-500 rounded-full animate-[spin_20s_linear_infinite]"></div>
-                     <div className="absolute inset-4 border border-blue-500/50 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
-                     <div className="absolute inset-8 border-4 border-t-cyan-400 border-r-transparent border-b-blue-400 border-l-transparent rounded-full animate-[spin_10s_linear_infinite]"></div>
-                     <div className="absolute inset-0 flex items-center justify-center">
-                         <img src="/logo.png" alt="MedLoop Logo" className="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse" />
-                     </div>
-                 </div>
-
-                 {/* Multi-layered Sine Waves (Bottom) */}
-                 <div className="absolute bottom-0 left-0 w-full h-24 opacity-40 flex flex-col justify-end">
-                     <svg viewBox="0 0 1000 100" className="w-full h-full absolute bottom-0" preserveAspectRatio="none">
-                         <path d="M0,50 Q125,0 250,50 T500,50 T750,50 T1000,50" fill="none" stroke="#06b6d4" strokeWidth="1" className="animate-[wave_4s_linear_infinite]" />
-                     </svg>
-                     <svg viewBox="0 0 1000 100" className="w-full h-full absolute bottom-0 opacity-50" preserveAspectRatio="none">
-                         <path d="M0,50 Q125,100 250,50 T500,50 T750,50 T1000,50" fill="none" stroke="#3b82f6" strokeWidth="2" className="animate-[wave_3s_linear_infinite_reverse]" />
+                 {/* Very Subtle EKG Line */}
+                 <div className="absolute bottom-0 left-0 w-full h-32 opacity-[0.03]">
+                     <svg viewBox="0 0 1000 100" className="w-full h-full" preserveAspectRatio="none">
+                         <path 
+                             d="M0,50 L200,50 L230,20 L260,80 L290,50 L500,50 L530,20 L560,80 L590,50 L800,50 L830,20 L860,80 L890,50 L1000,50" 
+                             fill="none" 
+                             stroke="#0d9488" 
+                             strokeWidth="2" 
+                             strokeLinecap="round" 
+                             strokeLinejoin="round"
+                             className="animate-[dash_10s_linear_infinite]"
+                             style={{ strokeDasharray: 1000, strokeDashoffset: 1000 }}
+                         />
                      </svg>
                      <style>{`
-                         @keyframes wave {
-                             0% { transform: translateX(0); }
-                             100% { transform: translateX(-50%); }
+                         @keyframes dash {
+                             0% { stroke-dashoffset: 1000; }
+                             100% { stroke-dashoffset: 0; }
                          }
                      `}</style>
                  </div>
@@ -536,95 +529,69 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
              {/* Main Content Container */}
              <div className="relative z-10 w-full px-8 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
                  
-                 {/* Left Side: Holographic Time Display */}
-                 <div className="flex flex-col items-center md:items-start relative">
-                     {/* Decorative Tech Accents */}
-                     <div className="absolute -top-6 -left-4 w-8 h-8 border-t-2 border-l-2 border-cyan-500/50"></div>
-                     <div className="absolute -bottom-6 -right-4 w-8 h-8 border-b-2 border-r-2 border-cyan-500/50"></div>
-                     
-                     <div className="text-cyan-500 text-xs font-mono tracking-[0.3em] mb-2 flex items-center gap-2">
-                         <span className="w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
-                         SYS.TIME.SYNC
+                 {/* Left Side: Clean Time Display */}
+                 <div className="flex flex-col items-center md:items-start">
+                     <div className="text-slate-400 text-xs font-bold tracking-widest uppercase mb-2 flex items-center gap-2">
+                         <i className="fa-regular fa-clock"></i>
+                         LOCAL TIME
                      </div>
                      
-                     <div className="flex items-baseline gap-2 text-white">
-                         <div className="relative overflow-hidden bg-slate-900/80 border border-cyan-900/50 rounded-2xl px-6 py-4 shadow-inner">
-                             <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
-                             <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                                 {hh}
-                             </span>
-                         </div>
-                         <span className="text-5xl md:text-7xl font-light text-cyan-500 animate-pulse leading-none mb-4 md:mb-8 mx-2">:</span>
-                         <div className="relative overflow-hidden bg-slate-900/80 border border-cyan-900/50 rounded-2xl px-6 py-4 shadow-inner">
-                             <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
-                             <span className="text-7xl md:text-[8rem] font-black tracking-tighter leading-none" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                                 {mm}
-                             </span>
-                         </div>
+                     <div className="flex items-baseline gap-1 text-slate-800">
+                         <span className="text-7xl md:text-[8rem] font-light tracking-tighter leading-none">
+                             {hh}
+                         </span>
+                         <span className="text-5xl md:text-7xl font-light text-slate-300 animate-pulse leading-none mb-4 md:mb-8 mx-1">:</span>
+                         <span className="text-7xl md:text-[8rem] font-light tracking-tighter leading-none">
+                             {mm}
+                         </span>
                      </div>
                      
-                     {/* High-Tech Seconds Progress */}
-                     <div className="flex items-center gap-4 mt-2 md:mt-4 w-full max-w-[320px]">
-                         <div className="text-cyan-400 font-mono text-xl md:text-2xl font-bold w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">{String(ss).padStart(2, '0')}</div>
-                         <div className="flex-1 flex gap-1 h-2">
-                             {/* Segmented Progress Bar */}
-                             {[...Array(30)].map((_, i) => (
-                                 <div 
-                                     key={i} 
-                                     className={`flex-1 h-full rounded-sm transition-all duration-300 ${i < (ss / 2) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-cyan-950/50'}`}
-                                 ></div>
-                             ))}
+                     {/* Clean Seconds Progress */}
+                     <div className="flex items-center gap-4 mt-2 md:mt-4 w-full max-w-[280px]">
+                         <div className="text-primary font-medium text-xl md:text-2xl w-8">{String(ss).padStart(2, '0')}</div>
+                         <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                             <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear" style={{width: `${(ss / 60) * 100}%`}}></div>
                          </div>
                      </div>
                  </div>
 
-                 {/* Right Side: Medical HUD Stats */}
+                 {/* Right Side: Clean Stats */}
                  <div className="hidden md:flex flex-col items-end text-right z-20">
                      {/* Status Badge */}
-                     <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-none border border-cyan-500/30 bg-cyan-950/40 backdrop-blur-sm mb-6 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                        <i className="fa-solid fa-satellite-dish text-cyan-400 animate-pulse"></i>
-                        <span className="text-cyan-300 font-mono text-xs uppercase tracking-[0.2em]">{t('system_name')} // ACTIVE</span>
+                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-6">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <span className="text-emerald-700 font-bold text-[10px] uppercase tracking-widest">{t('system_name')} ONLINE</span>
                      </div>
                      
                      {/* Date Display */}
-                     <div className="text-3xl md:text-4xl font-bold text-white tracking-wide mb-1 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                     <div className="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-1">
                          {dayName}
                      </div>
-                     <div className="text-lg md:text-xl text-cyan-500/80 font-mono uppercase tracking-widest flex items-center gap-3">
+                     <div className="text-lg md:text-xl text-slate-500 font-medium uppercase tracking-wide flex items-center gap-3">
                          {fmtDate(currentTime)}
                      </div>
                      
-                     {/* HUD Data Modules */}
-                     <div className="flex gap-4 mt-8">
-                         {/* Waiting Module */}
-                         <div className="relative bg-[#0f172a]/80 border-l-2 border-cyan-500 pl-4 pr-6 py-3 flex items-center gap-4 backdrop-blur-md">
-                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/50"></div>
-                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-500/50"></div>
-                            <div className="text-cyan-400 text-2xl"><i className="fa-solid fa-users-viewfinder"></i></div>
+                     {/* Clean Stat Pills */}
+                     <div className="flex gap-3 mt-8">
+                         <div className="bg-white border border-slate-100 pl-4 pr-6 py-3 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-lg"><i className="fa-solid fa-users"></i></div>
                             <div className="flex flex-col items-start leading-none">
-                                <span className="font-mono text-white text-2xl font-bold drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{String(activeQueue.length).padStart(2, '0')}</span>
-                                <span className="text-[10px] font-mono text-cyan-500/70 uppercase tracking-widest mt-1">Waiting</span>
+                                <span className="font-bold text-slate-800 text-2xl">{activeQueue.length}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Waiting</span>
                             </div>
                          </div>
                          
-                         {/* Clinics Module */}
-                         <div className="relative bg-[#0f172a]/80 border-l-2 border-blue-500 pl-4 pr-6 py-3 flex items-center gap-4 backdrop-blur-md">
-                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-blue-500/50"></div>
-                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-blue-500/50"></div>
-                            <div className="text-blue-400 text-2xl"><i className="fa-solid fa-network-wired"></i></div>
+                         <div className="bg-white border border-slate-100 pl-4 pr-6 py-3 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-lg"><i className="fa-solid fa-user-doctor"></i></div>
                             <div className="flex flex-col items-start leading-none">
-                                <span className="font-mono text-white text-2xl font-bold drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{String(clinics.length).padStart(2, '0')}</span>
-                                <span className="text-[10px] font-mono text-blue-500/70 uppercase tracking-widest mt-1">Clinics</span>
+                                <span className="font-bold text-slate-800 text-2xl">{clinics.length}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Clinics</span>
                             </div>
                          </div>
                      </div>
                  </div>
 
              </div>
-             
-             {/* Glitch/Scan Overlay */}
-             <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(6,182,212,0.05)_50%)] bg-[length:100%_4px] z-50 opacity-20"></div>
         </div>
 
         {/* ... [Rest of the file remains same] ... */}
