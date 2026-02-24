@@ -542,22 +542,6 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                      <div className="absolute -top-6 -left-4 w-8 h-8 border-t-2 border-l-2 border-cyan-500/50"></div>
                      <div className="absolute -bottom-6 -right-4 w-8 h-8 border-b-2 border-r-2 border-cyan-500/50"></div>
                      
-                     {/* Client Name & System Status */}
-                     <div className="flex items-center gap-3 mb-3">
-                         <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-cyan-950 border border-cyan-500/50">
-                             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-ping absolute"></span>
-                             <span className="w-2 h-2 bg-cyan-400 rounded-full relative"></span>
-                         </div>
-                         <div className="flex flex-col">
-                             <span className="text-white font-bold text-sm md:text-base tracking-widest uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-                                 {client?.name || 'MEDLOOP CLINIC'}
-                             </span>
-                             <span className="text-cyan-500/70 text-[10px] font-mono tracking-[0.3em] uppercase">
-                                 Reception System // Active
-                             </span>
-                         </div>
-                     </div>
-                     
                      <div className="flex items-baseline gap-2 text-white">
                          <span className="text-7xl md:text-[8rem] font-light tracking-tighter leading-none">
                              {hh}
@@ -585,11 +569,20 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
 
                  {/* Right Side: Medical HUD Stats */}
                  <div className="hidden md:flex flex-col items-end text-right z-20">
-                     {/* Status Badge */}
-                     <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-none border border-cyan-500/30 bg-cyan-950/40 backdrop-blur-sm mb-6 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                        <i className="fa-solid fa-shield-halved text-cyan-400 animate-pulse"></i>
-                        <span className="text-cyan-300 font-mono text-xs uppercase tracking-[0.2em]">SECURE CONNECTION</span>
+                     {/* Client Name & System Status (Moved to Right) */}
+                     <div className="flex items-center gap-3 mb-6 justify-end">
+                         <div className="flex flex-col text-right">
+                             <span className="text-white font-bold text-sm md:text-base tracking-widest uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+                                 {client?.name || 'MEDLOOP CLINIC'}
+                             </span>
+                             <span className="text-cyan-500/70 text-[10px] font-mono tracking-[0.3em] uppercase">
+                                 Reception System // Active
+                             </span>
+                         </div>
+                         <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-cyan-950 border border-cyan-500/50">
+                             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-ping absolute"></span>
+                             <span className="w-2 h-2 bg-cyan-400 rounded-full relative"></span>
+                         </div>
                      </div>
                      
                      {/* Date Display */}
