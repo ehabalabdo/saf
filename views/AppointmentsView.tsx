@@ -5,7 +5,7 @@ import { ClinicService, PatientService, AppointmentService } from '../services/s
 import { pgUsers, pgAppointments } from '../services/apiServices';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Appointment, Clinic, Patient, UserRole, User, Gender } from '../types';
+import { Appointment, Clinic, Patient, UserRole, User, Gender, Priority } from '../types';
 
 const AppointmentsView: React.FC = () => {
   const { user } = useAuth();
@@ -47,17 +47,19 @@ const AppointmentsView: React.FC = () => {
       date: '', 
       time: '', 
       reason: '',
+      priority: 'normal' as Priority,
 
       // New Patient Info - Personal
       newName: '',
       newPhone: '',
-      newAge: '',
+      newDateOfBirth: '',
       newGender: 'male' as Gender,
 
       // New Patient Info - Medical
       newAllergies: false, newAllergiesDetail: '',
       newChronic: false, newChronicDetail: '',
       newMeds: false, newMedsDetail: '',
+      newSurgeries: false, newSurgeriesDetail: '',
       newPregnant: false
   });
 
@@ -102,10 +104,12 @@ const AppointmentsView: React.FC = () => {
           date: new Date().toISOString().split('T')[0],
           time: new Date().toTimeString().slice(0, 5),
           reason: '',
-          newName: '', newPhone: '', newAge: '', newGender: 'male',
+          priority: 'normal' as Priority,
+          newName: '', newPhone: '', newDateOfBirth: '', newGender: 'male',
           newAllergies: false, newAllergiesDetail: '',
           newChronic: false, newChronicDetail: '',
           newMeds: false, newMedsDetail: '',
+          newSurgeries: false, newSurgeriesDetail: '',
           newPregnant: false
       });
       setPatientMode('existing');
@@ -124,10 +128,12 @@ const AppointmentsView: React.FC = () => {
           date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'),
           time: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'),
           reason: app.reason,
-          newName: '', newPhone: '', newAge: '', newGender: 'male',
+          priority: 'normal' as Priority,
+          newName: '', newPhone: '', newDateOfBirth: '', newGender: 'male',
           newAllergies: false, newAllergiesDetail: '',
           newChronic: false, newChronicDetail: '',
           newMeds: false, newMedsDetail: '',
+          newSurgeries: false, newSurgeriesDetail: '',
           newPregnant: false
       });
       setPatientMode('existing');
@@ -155,12 +161,13 @@ const AppointmentsView: React.FC = () => {
              finalPatientId = await PatientService.add(user, {
                  name: formData.newName,
                  phone: formData.newPhone,
-                 age: parseInt(formData.newAge) || 0,
+                 dateOfBirth: formData.newDateOfBirth || undefined,
                  gender: formData.newGender,
                  medicalProfile: { 
                      allergies: { exists: formData.newAllergies, details: formData.newAllergiesDetail },
                      chronicConditions: { exists: formData.newChronic, details: formData.newChronicDetail },
                      currentMedications: { exists: formData.newMeds, details: formData.newMedsDetail },
+                     previousSurgeries: { exists: formData.newSurgeries, details: formData.newSurgeriesDetail },
                      isPregnant: formData.newGender === 'female' && formData.newPregnant
                  },
                  currentVisit: {
@@ -168,9 +175,9 @@ const AppointmentsView: React.FC = () => {
                      clinicId: formData.clinicId,
                      date: Date.now(),
                      status: 'completed', 
-                     priority: 'normal',
+                     priority: formData.priority,
                      source: 'appointment',
-                     reasonForVisit: 'Initial Registration'
+                     reasonForVisit: formData.reason || 'Initial Registration'
                  }
              });
              finalPatientName = formData.newName;
@@ -560,55 +567,48 @@ const AppointmentsView: React.FC = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-4 animate-fade-in">
-                                    <h4 className="text-xs font-bold uppercase text-blue-800 mb-2 border-b border-blue-200 pb-1">Personal Details</h4>
-                                    <div>
-                                        <input type="text" placeholder={t('full_name')} className="w-full p-2 border rounded text-sm" value={formData.newName} onChange={e => setFormData({...formData, newName: e.target.value})} required={patientMode === 'new'} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input type="tel" placeholder={t('phone')} className="w-full p-2 border rounded text-sm" value={formData.newPhone} onChange={e => setFormData({...formData, newPhone: e.target.value})} required={patientMode === 'new'} />
-                                        <input type="number" placeholder={t('age')} className="w-full p-2 border rounded text-sm" value={formData.newAge} onChange={e => setFormData({...formData, newAge: e.target.value})} required={patientMode === 'new'} />
-                                    </div>
-                                    <div>
-                                        <select className="w-full p-2 border rounded text-sm bg-white" value={formData.newGender} onChange={e => setFormData({...formData, newGender: e.target.value as Gender})}>
-                                            <option value="male">{t('male')}</option>
-                                            <option value="female">{t('female')}</option>
-                                        </select>
+                                <div className="space-y-4 animate-fade-in">
+                                    {/* Personal Info */}
+                                    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                                        <h4 className="text-[10px] font-bold uppercase text-slate-400 flex items-center gap-2 mb-2"><span className="w-1 h-4 bg-primary rounded-full"></span> {t('personal_info')}</h4>
+                                        <input type="text" placeholder={t('full_name')} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" value={formData.newName} onChange={e => setFormData({...formData, newName: e.target.value})} required={patientMode === 'new'} />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="date" placeholder={t('date_of_birth')} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" value={formData.newDateOfBirth} onChange={e => setFormData({...formData, newDateOfBirth: e.target.value})} />
+                                            <select className="w-full p-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" value={formData.newGender} onChange={e => setFormData({...formData, newGender: e.target.value as Gender})}>
+                                                <option value="male">{t('male')}</option>
+                                                <option value="female">{t('female')}</option>
+                                            </select>
+                                        </div>
+                                        <input type="tel" placeholder={t('phone')} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" value={formData.newPhone} onChange={e => setFormData({...formData, newPhone: e.target.value})} required={patientMode === 'new'} />
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-xs text-blue-800">
+                                           <i className="fa-solid fa-info-circle mr-2"></i>
+                                           <strong>ملاحظة:</strong> رقم الهاتف سيكون اسم المستخدم، وكلمة المرور ستُولّد تلقائياً
+                                        </div>
                                     </div>
 
-                                    <h4 className="text-xs font-bold uppercase text-red-800 mt-4 mb-2 border-b border-red-200 pb-1">Medical Intake</h4>
-                                    <div className="bg-white p-3 rounded border border-blue-100 space-y-3">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <input type="checkbox" id="newAllergies" checked={formData.newAllergies} onChange={e => setFormData({...formData, newAllergies: e.target.checked})} className="rounded text-red-500" />
-                                                <label htmlFor="newAllergies" className="text-sm text-slate-700 font-medium">{t('allergies')}</label>
+                                    {/* Medical Intake */}
+                                    <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 space-y-3">
+                                        <h4 className="text-[10px] font-bold uppercase text-rose-700 flex items-center gap-2 mb-2"><span className="w-1 h-4 bg-rose-500 rounded-full"></span> {t('medical_intake')}</h4>
+                                        {[
+                                            { key: 'newAllergies', detailKey: 'newAllergiesDetail', label: t('allergies') },
+                                            { key: 'newChronic', detailKey: 'newChronicDetail', label: t('chronic_conditions') },
+                                            { key: 'newMeds', detailKey: 'newMedsDetail', label: t('current_meds') },
+                                            { key: 'newSurgeries', detailKey: 'newSurgeriesDetail', label: t('surgeries') }
+                                        ].map(({ key, detailKey, label }) => (
+                                            <div key={key} className="bg-white/70 p-3 rounded-xl border border-rose-100/30">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <input type="checkbox" checked={(formData as any)[key]} onChange={e => setFormData({...formData, [key]: e.target.checked})} className="w-5 h-5 text-rose-600 rounded-md" />
+                                                    <label className="text-xs font-bold text-slate-700">{label}</label>
+                                                </div>
+                                                {(formData as any)[key] && (
+                                                    <input type="text" placeholder="..." className="w-full bg-white border border-rose-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-rose-200 mt-1" value={(formData as any)[detailKey]} onChange={e => setFormData({...formData, [detailKey]: e.target.value})} />
+                                                )}
                                             </div>
-                                            {formData.newAllergies && (
-                                                <input type="text" placeholder="Details..." className="w-full mt-1 p-1.5 text-xs border rounded" value={formData.newAllergiesDetail} onChange={e => setFormData({...formData, newAllergiesDetail: e.target.value})} />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <input type="checkbox" id="newChronic" checked={formData.newChronic} onChange={e => setFormData({...formData, newChronic: e.target.checked})} className="rounded text-red-500" />
-                                                <label htmlFor="newChronic" className="text-sm text-slate-700 font-medium">{t('chronic_conditions')}</label>
-                                            </div>
-                                            {formData.newChronic && (
-                                                <input type="text" placeholder="Details..." className="w-full mt-1 p-1.5 text-xs border rounded" value={formData.newChronicDetail} onChange={e => setFormData({...formData, newChronicDetail: e.target.value})} />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <input type="checkbox" id="newMeds" checked={formData.newMeds} onChange={e => setFormData({...formData, newMeds: e.target.checked})} className="rounded text-red-500" />
-                                                <label htmlFor="newMeds" className="text-sm text-slate-700 font-medium">{t('current_meds')}</label>
-                                            </div>
-                                            {formData.newMeds && (
-                                                <input type="text" placeholder="Details..." className="w-full mt-1 p-1.5 text-xs border rounded" value={formData.newMedsDetail} onChange={e => setFormData({...formData, newMedsDetail: e.target.value})} />
-                                            )}
-                                        </div>
+                                        ))}
                                         {formData.newGender === 'female' && (
-                                            <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                                                <input type="checkbox" id="newPreg" checked={formData.newPregnant} onChange={e => setFormData({...formData, newPregnant: e.target.checked})} className="rounded text-blue-500" />
-                                                <label htmlFor="newPreg" className="text-sm text-slate-700">{t('pregnancy')}</label>
+                                            <div className="bg-white/70 p-3 rounded-xl border border-rose-100/30 flex items-center gap-3">
+                                                <input type="checkbox" id="newPreg" checked={formData.newPregnant} onChange={e => setFormData({...formData, newPregnant: e.target.checked})} className="w-5 h-5 text-rose-600 rounded-md" />
+                                                <label htmlFor="newPreg" className="text-xs font-bold text-slate-700">{t('pregnancy')}</label>
                                             </div>
                                         )}
                                     </div>
@@ -644,6 +644,21 @@ const AppointmentsView: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('reason_visit')}</label>
                                     <input type="text" className="w-full p-2 border rounded" value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} required />
+                                </div>
+
+                                {/* Priority Toggle */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('priority')}</label>
+                                    <div className="flex gap-2">
+                                        <button type="button" onClick={() => setFormData({...formData, priority: 'normal' as Priority})}
+                                            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${formData.priority === 'normal' ? 'bg-green-100 text-green-800 border-2 border-green-400 shadow-sm' : 'bg-gray-50 text-gray-400 border border-gray-200 hover:bg-gray-100'}`}>
+                                            <i className="fa-solid fa-user"></i> {t('normal')}
+                                        </button>
+                                        <button type="button" onClick={() => setFormData({...formData, priority: 'urgent' as Priority})}
+                                            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${formData.priority === 'urgent' ? 'bg-red-100 text-red-800 border-2 border-red-400 shadow-sm animate-pulse' : 'bg-gray-50 text-gray-400 border border-gray-200 hover:bg-gray-100'}`}>
+                                            <i className="fa-solid fa-bolt"></i> {t('urgent')}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
