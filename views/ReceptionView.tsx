@@ -283,78 +283,99 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
   const handlePrintInvoice = async () => {
       if (!selectedInvoice) return;
       const settings = await SettingsService.getSettings();
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
       
-      // LOGO
-      if (settings.logoUrl) {
-          try {
-             doc.addImage(settings.logoUrl, 'PNG', 15, 10, 20, 20); // x, y, w, h
-          } catch(e) { console.error("Could not add logo", e); }
+      // Build invoice HTML with Arabic support
+      const clinicName = settings.clinicName || 'العيادة';
+      const address = settings.address || '';
+      const invoiceDate = fmtDate(selectedInvoice.createdAt);
+      
+      const itemsHtml = selectedInvoice.items.map(item => `
+        <tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#334155">${item.description}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#334155;text-align:left;white-space:nowrap">${item.price.toFixed(2)} د.أ</td>
+        </tr>
+      `).join('');
+
+      const container = document.createElement('div');
+      container.style.cssText = 'position:fixed;top:-9999px;left:0;width:700px;background:#fff;z-index:-1;font-family:system-ui,-apple-system,Tahoma,Arial,sans-serif';
+      container.innerHTML = `
+        <div style="padding:40px;direction:rtl;text-align:right">
+          <!-- Header -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;border-bottom:3px solid #0d9488;padding-bottom:20px">
+            <div>
+              ${settings.logoUrl ? `<img src="${settings.logoUrl}" style="width:60px;height:60px;border-radius:12px;margin-bottom:8px" crossorigin="anonymous"/>` : ''}
+              <div style="font-size:22px;font-weight:800;color:#0d9488">${clinicName}</div>
+              ${address ? `<div style="font-size:12px;color:#94a3b8;margin-top:4px">${address}</div>` : ''}
+            </div>
+            <div style="text-align:left">
+              <div style="font-size:28px;font-weight:900;color:#1e293b;letter-spacing:-1px">فاتورة</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:4px">#${selectedInvoice.id.slice(-8)}</div>
+            </div>
+          </div>
+
+          <!-- Info Row -->
+          <div style="display:flex;justify-content:space-between;margin-bottom:24px;background:#f8fafc;padding:16px;border-radius:12px">
+            <div>
+              <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">اسم المريض</div>
+              <div style="font-size:16px;font-weight:700;color:#1e293b">${selectedInvoice.patientName}</div>
+            </div>
+            <div style="text-align:left">
+              <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">التاريخ</div>
+              <div style="font-size:14px;font-weight:600;color:#1e293b">${invoiceDate}</div>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+            <thead>
+              <tr style="background:#f1f5f9">
+                <th style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase">الوصف</th>
+                <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;width:120px">المبلغ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <!-- Total -->
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#0d9488;color:#fff;padding:16px 20px;border-radius:12px;margin-top:10px">
+            <div style="font-size:16px;font-weight:700">الإجمالي</div>
+            <div style="font-size:24px;font-weight:900">${selectedInvoice.totalAmount.toFixed(2)} د.أ</div>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align:center;margin-top:30px;padding-top:16px;border-top:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#94a3b8">شكراً لاختياركم ${clinicName}</div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(container);
+
+      try {
+          const html2canvas = (await import('html2canvas')).default;
+          const { jsPDF } = await import('jspdf');
+
+          const canvas = await html2canvas(container, {
+              scale: 2,
+              backgroundColor: '#ffffff',
+              useCORS: true,
+              logging: false,
+          });
+
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          pdf.save(`Inv_${selectedInvoice.id}.pdf`);
+      } catch (e) {
+          console.error('PDF generation error:', e);
+          alert('خطأ في إنشاء الفاتورة');
+      } finally {
+          document.body.removeChild(container);
       }
-
-      // Header
-      doc.setFontSize(24);
-      doc.setTextColor(0);
-      doc.text("INVOICE", pageWidth - 20, 25, { align: "right" });
-      
-      doc.setFontSize(14);
-      doc.setTextColor(13, 148, 136); // Teal
-      doc.text(settings.clinicName || "MedCore Clinic", 40, 20); // Offset x if logo exists
-
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(settings.address || "Medical Plaza", 40, 26);
-      
-      // Info
-      doc.setTextColor(0);
-      doc.setFontSize(11);
-      doc.text(`Invoice ID: ${selectedInvoice.id}`, 15, 50);
-      doc.text(`Date: ${fmtDate(selectedInvoice.createdAt)}`, pageWidth - 15, 50, { align: "right" });
-      
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Bill To: ${selectedInvoice.patientName}`, 15, 60);
-      doc.setFont("helvetica", "normal");
-      
-      // Table Header
-      let y = 80;
-      doc.setFillColor(240, 240, 240);
-      doc.rect(15, y - 6, pageWidth - 30, 8, "F");
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Description", 20, y);
-      doc.text("Amount", pageWidth - 20, y, { align: "right" });
-      
-      // Items
-      y += 12;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      
-      selectedInvoice.items.forEach(item => {
-          doc.text(item.description, 20, y);
-          doc.text(`${item.price.toFixed(2)} JOD`, pageWidth - 20, y, { align: "right" });
-          y += 8;
-      });
-      
-      // Total
-      y += 5;
-      doc.setDrawColor(0);
-      doc.line(15, y, pageWidth - 15, y);
-      y += 10;
-      
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Total Due: ${selectedInvoice.totalAmount.toFixed(2)} JOD`, pageWidth - 20, y, { align: "right" });
-      
-      // Footer
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(150);
-      doc.text("Thank you for choosing us.", pageWidth / 2, 280, { align: "center" });
-      
-      doc.save(`Inv_${selectedInvoice.id}.pdf`);
   };
 
   const openQueueWindow = () => {
