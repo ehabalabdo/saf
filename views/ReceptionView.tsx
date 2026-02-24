@@ -498,11 +498,37 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
         {/* 1. ELEGANT CLINIC CLOCK WIDGET */}
         <div dir="ltr" className="relative rounded-[2rem] md:rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50 h-[220px] md:h-[280px] group select-none flex items-center">
              
-             {/* Elegant Background Glows */}
+             {/* Elegant Background Glows & Medical Animations */}
              <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                  <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[150%] bg-teal-500/10 blur-[100px] rounded-full mix-blend-screen"></div>
                  <div className="absolute top-[20%] -right-[10%] w-[40%] h-[100%] bg-blue-500/10 blur-[80px] rounded-full mix-blend-screen"></div>
                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+                 
+                 {/* EKG Heartbeat Line Animation */}
+                 <div className="absolute bottom-0 left-0 w-full h-32 opacity-20">
+                     <svg viewBox="0 0 1000 100" className="w-full h-full" preserveAspectRatio="none">
+                         <path 
+                             d="M0,50 L200,50 L230,20 L260,80 L290,50 L500,50 L530,20 L560,80 L590,50 L800,50 L830,20 L860,80 L890,50 L1000,50" 
+                             fill="none" 
+                             stroke="#2dd4bf" 
+                             strokeWidth="2" 
+                             strokeLinecap="round" 
+                             strokeLinejoin="round"
+                             className="animate-[dash_3s_linear_infinite]"
+                             style={{ strokeDasharray: 1000, strokeDashoffset: 1000 }}
+                         />
+                     </svg>
+                     <style>{`
+                         @keyframes dash {
+                             0% { stroke-dashoffset: 1000; }
+                             100% { stroke-dashoffset: 0; }
+                         }
+                     `}</style>
+                 </div>
+                 
+                 {/* Floating Medical Crosses */}
+                 <div className="absolute top-10 right-[30%] text-teal-500/10 animate-[bounce_4s_ease-in-out_infinite]"><i className="fa-solid fa-plus text-4xl"></i></div>
+                 <div className="absolute bottom-10 left-[40%] text-blue-500/10 animate-[bounce_5s_ease-in-out_infinite_reverse]"><i className="fa-solid fa-plus text-2xl"></i></div>
              </div>
              
              {/* Main Flex Container */}
@@ -517,8 +543,10 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                      </div>
                      <div className="flex items-center gap-4 mt-2 md:mt-4 w-full max-w-[280px]">
                          <div className="text-teal-400 font-mono text-lg md:text-xl font-bold w-8">{String(ss).padStart(2, '0')}</div>
-                         <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
-                             <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(45,212,191,0.5)]" style={{width: `${(ss / 60) * 100}%`, transition: 'width 1s linear'}}></div>
+                         <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full overflow-hidden relative">
+                             <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(45,212,191,0.5)]" style={{width: `${(ss / 60) * 100}%`, transition: 'width 1s linear'}}></div>
+                             {/* Pulse dot at the end of the progress bar */}
+                             <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_8px_white] animate-ping" style={{left: `calc(${(ss / 60) * 100}% - 4px)`, transition: 'left 1s linear'}}></div>
                          </div>
                      </div>
                  </div>
