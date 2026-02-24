@@ -404,6 +404,8 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
   const hh = String(currentTime.getHours()).padStart(2, '0');
   const mm = String(currentTime.getMinutes()).padStart(2, '0');
   const ss = currentTime.getSeconds();
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = weekdays[currentTime.getDay()];
 
   return (
     <Layout title={t('reception_desk')}>
@@ -535,7 +537,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                         <span className="text-emerald-500 font-bold text-xs uppercase tracking-[0.2em]">{t('system_name')} ONLINE</span>
                      </div>
                      <div className="text-4xl font-black text-white tracking-tight">
-                         {currentTime.toLocaleDateString('en-GB', { weekday: 'long' })}
+                         {dayName}
                      </div>
                      <div className="text-xl text-slate-400 font-light uppercase tracking-widest flex items-center gap-3">
                          {fmtDate(currentTime)}
