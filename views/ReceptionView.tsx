@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import { ClinicService, PatientService, AppointmentService, NotificationService, BillingService, SettingsService, CourseService } from '../services/services';
+import { ClinicService, PatientService, AppointmentService, NotificationService, BillingService, CourseService } from '../services/services';
 import { api } from '../src/api';
 import { useAuth } from '../context/AuthContext';
 import { useClientSafe } from '../context/ClientContext';
@@ -282,10 +282,11 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
   // --- PDF GENERATOR ---
   const handlePrintInvoice = async () => {
       if (!selectedInvoice) return;
-      const settings = await SettingsService.getSettings();
       
-      const clinicName = settings.clinicName || 'العيادة';
-      const address = settings.address || '';
+      // Use client (clinic) data — each clinic gets their own name/logo/address
+      const clinicName = client?.name || 'العيادة';
+      const clinicLogo = client?.logoUrl || '';
+      const clinicAddress = client?.address || '';
       const invoiceDate = fmtDate(selectedInvoice.createdAt);
       
       const itemsHtml = selectedInvoice.items.map(item => `
@@ -330,9 +331,9 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
 <body>
   <div class="header">
     <div>
-      ${settings.logoUrl ? `<img src="${settings.logoUrl}" class="logo-img"/>` : ''}
+      ${clinicLogo ? `<img src="${clinicLogo}" class="logo-img"/>` : ''}
       <div class="clinic-name">${clinicName}</div>
-      ${address ? `<div class="clinic-addr">${address}</div>` : ''}
+      ${clinicAddress ? `<div class="clinic-addr">${clinicAddress}</div>` : ''}
     </div>
     <div>
       <div class="invoice-title">فاتورة</div>
