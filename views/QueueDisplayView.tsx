@@ -107,7 +107,7 @@ const QueueDisplayView: React.FC = () => {
                // Announce patient name
                const isArabicName = /[\u0600-\u06FF]/.test(p.name);
                const text = isArabicName 
-                 ? `المريض ${p.name}, يرجى التوجه إلى ${clinicName}`
+                 ? `الرجاء من المريض ${p.name}, التوجه إلى ${clinicName}`
                  : `Patient ${p.name}, please proceed to ${clinicName}`;
                speak(text, isArabicName ? 'ar-SA' : 'en-US');
            }
