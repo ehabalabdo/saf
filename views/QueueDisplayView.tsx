@@ -45,40 +45,36 @@ const QueueDisplayView: React.FC = () => {
 
   // ============ SIMPLE TTS - Google Translate ============
   const speakGoogle = (text: string, isArabic: boolean): Promise<void> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const audio = audioRef.current;
-      if (!audio) { resolve(); return; }
+      if (!audio) { reject('no audio element'); return; }
       
       const lang = isArabic ? 'ar' : 'en';
-      // Split text into chunks of 200 chars (Google TTS limit)
-      const chunks = text.length > 200 ? [text.substring(0, 200)] : [text];
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunks[0])}`;
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`;
       
       console.log('[TTS] Google TTS URL:', url);
-      setTtsStatus('جاري النطق...');
+      setTtsStatus('جاري النطق (Google)...');
       
       audio.src = url;
       audio.onended = () => { setTtsStatus('جاهز ✅'); resolve(); };
       audio.onerror = (e) => { 
         console.warn('[TTS] Google audio error:', e);
-        setTtsStatus('خطأ في Google TTS - جاري المحاولة بطريقة أخرى');
-        resolve(); 
+        reject('Google TTS audio error');
       };
       
       audio.play().then(() => {
         console.log('[TTS] Google TTS playing!');
       }).catch((e) => {
         console.warn('[TTS] Google play() failed:', e);
-        setTtsStatus('فشل تشغيل الصوت');
-        resolve();
+        reject('Google TTS play failed');
       });
     });
   };
 
   // ============ Browser SpeechSynthesis ============
   const speakBrowser = (text: string, isArabic: boolean): Promise<void> => {
-    return new Promise((resolve) => {
-      if (!window.speechSynthesis) { resolve(); return; }
+    return new Promise((resolve, reject) => {
+      if (!window.speechSynthesis) { reject('no speechSynthesis'); return; }
       
       window.speechSynthesis.cancel();
       
@@ -90,30 +86,44 @@ const QueueDisplayView: React.FC = () => {
       
       // Find voice
       const voices = window.speechSynthesis.getVoices();
+      console.log('[TTS] Browser voices available:', voices.length, voices.map(v => `${v.name}(${v.lang})`).join(', '));
+      
       if (isArabic) {
-        const arVoice = voices.find(v => v.lang.startsWith('ar'));
-        if (arVoice) u.voice = arVoice;
+        const arVoice = voices.find(v => v.lang.startsWith('ar')) || 
+                        voices.find(v => v.name.toLowerCase().includes('arabic'));
+        if (arVoice) {
+          u.voice = arVoice;
+          console.log('[TTS] Using Arabic voice:', arVoice.name);
+        }
       }
       
-      console.log('[TTS] Browser TTS speaking:', text, 'voices available:', voices.length);
       setTtsStatus('جاري النطق (متصفح)...');
       
-      u.onend = () => { setTtsStatus('جاهز ✅'); resolve(); };
-      u.onerror = () => { setTtsStatus('خطأ في نطق المتصفح'); resolve(); };
+      let done = false;
+      u.onend = () => { if (!done) { done = true; setTtsStatus('جاهز ✅'); resolve(); } };
+      u.onerror = (e) => { if (!done) { done = true; reject('Browser TTS error: ' + e.error); } };
       
-      // Safety timeout
-      setTimeout(() => resolve(), 12000);
+      // Safety timeout — if nothing happens in 10 seconds, reject
+      setTimeout(() => { if (!done) { done = true; reject('Browser TTS timeout'); } }, 10000);
       
       window.speechSynthesis.speak(u);
       
-      // Chrome fix: resume periodically
+      // Chrome fix
       const interval = setInterval(() => {
-        if (window.speechSynthesis.speaking) {
+        if (!done && window.speechSynthesis.speaking) {
           window.speechSynthesis.resume();
         } else {
           clearInterval(interval);
         }
       }, 3000);
+      
+      // Check if actually speaking (some browsers silently fail)
+      setTimeout(() => {
+        if (!done && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+          done = true;
+          reject('Browser TTS not speaking');
+        }
+      }, 500);
     });
   };
 
@@ -163,31 +173,36 @@ const QueueDisplayView: React.FC = () => {
       ctx.close();
     } catch(e) { /* ignore chime errors */ }
 
-    // 2. Try ResponsiveVoice first (best Arabic)
+    // 2. Try Browser TTS FIRST (most reliable, works offline)
     try {
-      await speakRV(text, isArabic);
-      console.log('[TTS] ✅ ResponsiveVoice worked!');
-      return;
-    } catch(e) {
-      console.log('[TTS] ResponsiveVoice failed:', e);
-    }
-
-    // 3. Try Google TTS
-    try {
-      await speakGoogle(text, isArabic);
-      console.log('[TTS] ✅ Google TTS worked!');
-      return;
-    } catch(e) {
-      console.log('[TTS] Google TTS failed:', e);
-    }
-
-    // 4. Try Browser TTS
-    try {
+      setTtsStatus('محاولة 1/3: متصفح...');
       await speakBrowser(text, isArabic);
       console.log('[TTS] ✅ Browser TTS worked!');
       return;
     } catch(e) {
-      console.log('[TTS] Browser TTS failed:', e);
+      console.log('[TTS] ❌ Browser TTS failed:', e);
+      setTtsStatus('فشل المتصفح، جاري المحاولة...');
+    }
+
+    // 3. Try ResponsiveVoice
+    try {
+      setTtsStatus('محاولة 2/3: ResponsiveVoice...');
+      await speakRV(text, isArabic);
+      console.log('[TTS] ✅ ResponsiveVoice worked!');
+      return;
+    } catch(e) {
+      console.log('[TTS] ❌ ResponsiveVoice failed:', e);
+      setTtsStatus('فشل RV، جاري المحاولة...');
+    }
+
+    // 4. Try Google TTS
+    try {
+      setTtsStatus('محاولة 3/3: Google...');
+      await speakGoogle(text, isArabic);
+      console.log('[TTS] ✅ Google TTS worked!');
+      return;
+    } catch(e) {
+      console.log('[TTS] ❌ Google TTS failed:', e);
     }
 
     setTtsStatus('❌ فشل النطق بجميع الطرق');
