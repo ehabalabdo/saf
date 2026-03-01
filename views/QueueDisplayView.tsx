@@ -13,27 +13,21 @@ import { fmtDate } from '../utils/formatters';
  */
 const QueueDisplayView: React.FC = () => {
   const { t, language } = useLanguage();
-  const { user } = useAuth(); // We need auth to access the DB service
+  const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [clinics, setClinics] = useState<Record<string, string>>({});
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [soundEnabled, setSoundEnabled] = useState(false); // Start OFF — user must click to activate (browser policy)
-  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [ttsStatus, setTtsStatus] = useState('اضغط لتفعيل الصوت');
   const [currentCalling, setCurrentCalling] = useState<{name: string, clinic: string, patientId?: string} | null>(null);
   
-  // Track previous patients to detect changes for TTS
   const prevPatientsRef = useRef<Patient[]>([]);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const callingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const voicesLoadedRef = useRef(false);
-  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  // Use a ref for soundEnabled so the subscription callback always has the latest value
-  const soundEnabledRef = useRef(soundEnabled);
-  useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
-
-  // Declare responsiveVoice on window
-  const rv = () => (window as any).responsiveVoice;
+  const soundEnabledRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speakQueueRef = useRef<{text: string, isArabic: boolean}[]>([]);
+  const isSpeakingRef = useRef(false);
 
   // Clock
   useEffect(() => {
@@ -41,182 +35,226 @@ const QueueDisplayView: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Check ResponsiveVoice loaded
+  // Create persistent audio element
   useEffect(() => {
-    const checkRV = setInterval(() => {
-      if (rv()?.voiceSupport()) {
-        console.log('[TTS] ResponsiveVoice loaded and ready!');
-        voicesLoadedRef.current = true;
-        clearInterval(checkRV);
-      }
-    }, 500);
-    return () => clearInterval(checkRV);
+    const audio = new Audio();
+    audio.volume = 1;
+    audioRef.current = audio;
+    return () => { audio.pause(); audio.src = ''; };
   }, []);
 
-  // Unlock audio on user interaction (required by browser autoplay policy)
-  const unlockAudio = async () => {
-    try {
-      // Create and resume AudioContext (unlocks Web Audio API)
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      if (audioCtxRef.current.state === 'suspended') {
-        await audioCtxRef.current.resume();
-      }
-      // Play a silent buffer to fully unlock
-      const buffer = audioCtxRef.current.createBuffer(1, 1, 22050);
-      const source = audioCtxRef.current.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioCtxRef.current.destination);
-      source.start(0);
-      
-      // Click-init ResponsiveVoice (needed for autoplay policy)
-      if (rv()) {
-        rv().speak('', 'Arabic Male', { volume: 0 });
-      }
-      
-      setAudioUnlocked(true);
-      console.log('[TTS] Audio unlocked successfully!');
-    } catch (e) {
-      console.warn('[TTS] Audio unlock failed:', e);
-    }
-  };
-
-  // When user toggles sound ON, unlock audio
-  const toggleSound = async () => {
-    const newState = !soundEnabled;
-    if (newState && !audioUnlocked) {
-      await unlockAudio();
-    }
-    setSoundEnabled(newState);
-  };
-
-  // Audio & TTS Logic
-  const playChime = (): Promise<void> => {
+  // ============ SIMPLE TTS - Google Translate ============
+  const speakGoogle = (text: string, isArabic: boolean): Promise<void> => {
     return new Promise((resolve) => {
-      try {
-        const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (!audioCtxRef.current) audioCtxRef.current = ctx;
-        
-        if (ctx.state === 'suspended') {
-          ctx.resume().then(() => {
-            playChimeSound(ctx, resolve);
-          });
-        } else {
-          playChimeSound(ctx, resolve);
-        }
-      } catch (e) {
-        console.warn('[TTS] Chime failed:', e);
+      const audio = audioRef.current;
+      if (!audio) { resolve(); return; }
+      
+      const lang = isArabic ? 'ar' : 'en';
+      // Split text into chunks of 200 chars (Google TTS limit)
+      const chunks = text.length > 200 ? [text.substring(0, 200)] : [text];
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunks[0])}`;
+      
+      console.log('[TTS] Google TTS URL:', url);
+      setTtsStatus('جاري النطق...');
+      
+      audio.src = url;
+      audio.onended = () => { setTtsStatus('جاهز ✅'); resolve(); };
+      audio.onerror = (e) => { 
+        console.warn('[TTS] Google audio error:', e);
+        setTtsStatus('خطأ في Google TTS - جاري المحاولة بطريقة أخرى');
+        resolve(); 
+      };
+      
+      audio.play().then(() => {
+        console.log('[TTS] Google TTS playing!');
+      }).catch((e) => {
+        console.warn('[TTS] Google play() failed:', e);
+        setTtsStatus('فشل تشغيل الصوت');
         resolve();
-      }
+      });
     });
   };
 
-  const playChimeSound = (ctx: AudioContext, resolve: () => void) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    // Two-tone chime (more noticeable)
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.setValueAtTime(800, ctx.currentTime + 0.15);
-    osc.frequency.setValueAtTime(1000, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.8);
-    osc.onended = () => resolve();
+  // ============ Browser SpeechSynthesis ============
+  const speakBrowser = (text: string, isArabic: boolean): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!window.speechSynthesis) { resolve(); return; }
+      
+      window.speechSynthesis.cancel();
+      
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = isArabic ? 'ar-SA' : 'en-US';
+      u.rate = 0.9;
+      u.volume = 1;
+      u.pitch = 1;
+      
+      // Find voice
+      const voices = window.speechSynthesis.getVoices();
+      if (isArabic) {
+        const arVoice = voices.find(v => v.lang.startsWith('ar'));
+        if (arVoice) u.voice = arVoice;
+      }
+      
+      console.log('[TTS] Browser TTS speaking:', text, 'voices available:', voices.length);
+      setTtsStatus('جاري النطق (متصفح)...');
+      
+      u.onend = () => { setTtsStatus('جاهز ✅'); resolve(); };
+      u.onerror = () => { setTtsStatus('خطأ في نطق المتصفح'); resolve(); };
+      
+      // Safety timeout
+      setTimeout(() => resolve(), 12000);
+      
+      window.speechSynthesis.speak(u);
+      
+      // Chrome fix: resume periodically
+      const interval = setInterval(() => {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.resume();
+        } else {
+          clearInterval(interval);
+        }
+      }, 3000);
+    });
   };
 
-  // Primary TTS using ResponsiveVoice (excellent Arabic support)
-  const speakWithResponsiveVoice = (text: string, isArabic: boolean): Promise<void> => {
+  // ============ ResponsiveVoice ============
+  const speakRV = (text: string, isArabic: boolean): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if (!rv() || !rv().voiceSupport()) {
-        reject(new Error('ResponsiveVoice not available'));
-        return;
-      }
-
-      const voiceName = isArabic ? 'Arabic Male' : 'US English Male';
-      console.log('[TTS] ResponsiveVoice speaking:', text, 'voice:', voiceName);
-
-      rv().speak(text, voiceName, {
-        pitch: 1,
-        rate: 0.9,
-        volume: 1,
-        onend: () => {
-          console.log('[TTS] ResponsiveVoice finished');
-          resolve();
-        },
-        onerror: (e: any) => {
-          console.warn('[TTS] ResponsiveVoice error:', e);
-          reject(e);
-        }
+      const rv = (window as any).responsiveVoice;
+      if (!rv || !rv.voiceSupport()) { reject('no RV'); return; }
+      
+      const voice = isArabic ? 'Arabic Male' : 'US English Male';
+      console.log('[TTS] ResponsiveVoice speaking:', text);
+      setTtsStatus('جاري النطق (ResponsiveVoice)...');
+      
+      rv.speak(text, voice, {
+        rate: 0.9, volume: 1, pitch: 1,
+        onend: () => { setTtsStatus('جاهز ✅'); resolve(); },
+        onerror: (e: any) => { reject(e); }
       });
-
-      // Safety timeout
+      
       setTimeout(() => resolve(), 15000);
     });
   };
 
-  const speak = async (text: string, langCode: string = 'en-US') => {
+  // ============ MAIN SPEAK with 3 fallbacks ============
+  const speak = async (text: string, isArabic: boolean) => {
     if (!soundEnabledRef.current) {
-      console.log('[TTS] Sound is disabled, skipping');
+      console.log('[TTS] Sound disabled, skip');
       return;
     }
-    console.log('[TTS] speak() called with:', { text, langCode });
+    
+    console.log('[TTS] === SPEAK CALLED ===', { text, isArabic });
+    setTtsStatus('🔔 تنبيه...');
 
-    const isArabic = langCode.startsWith('ar');
-
-    // 1. Play chime first
-    await playChime();
-
-    // Small delay between chime and speech
-    await new Promise(r => setTimeout(r, 400));
-
-    // 2. Try ResponsiveVoice (best Arabic support)
+    // 1. Play chime
     try {
-      await speakWithResponsiveVoice(text, isArabic);
-      console.log('[TTS] ResponsiveVoice succeeded');
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.setValueAtTime(900, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+      await new Promise(r => setTimeout(r, 800));
+      ctx.close();
+    } catch(e) { /* ignore chime errors */ }
+
+    // 2. Try ResponsiveVoice first (best Arabic)
+    try {
+      await speakRV(text, isArabic);
+      console.log('[TTS] ✅ ResponsiveVoice worked!');
       return;
-    } catch (e) {
-      console.warn('[TTS] ResponsiveVoice failed, trying browser TTS...', e);
+    } catch(e) {
+      console.log('[TTS] ResponsiveVoice failed:', e);
     }
 
-    // 3. Fallback: Browser SpeechSynthesis
+    // 3. Try Google TTS
     try {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = langCode;
-        utterance.rate = 0.85;
-        utterance.volume = 1;
-        window.speechSynthesis.speak(utterance);
-        console.log('[TTS] Browser TTS fallback used');
-        return;
-      }
-    } catch (e) {
-      console.warn('[TTS] Browser TTS failed, trying Google TTS...', e);
+      await speakGoogle(text, isArabic);
+      console.log('[TTS] ✅ Google TTS worked!');
+      return;
+    } catch(e) {
+      console.log('[TTS] Google TTS failed:', e);
     }
 
-    // 4. Last Fallback: Google Translate TTS
+    // 4. Try Browser TTS
     try {
-      const googleLang = isArabic ? 'ar' : 'en';
-      const audioUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=${googleLang}&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const audio = new Audio(audioUrl);
-      await audio.play();
-      console.log('[TTS] Google TTS succeeded');
-    } catch (e) {
-      console.error('[TTS] All TTS methods failed!', e);
+      await speakBrowser(text, isArabic);
+      console.log('[TTS] ✅ Browser TTS worked!');
+      return;
+    } catch(e) {
+      console.log('[TTS] Browser TTS failed:', e);
+    }
+
+    setTtsStatus('❌ فشل النطق بجميع الطرق');
+    console.error('[TTS] ALL methods failed!');
+  };
+
+  // ============ ENABLE SOUND (user click) ============
+  const enableSound = async () => {
+    const newState = !soundEnabled;
+    
+    if (newState) {
+      setTtsStatus('🔓 جاري تفعيل الصوت...');
+      
+      // Unlock AudioContext
+      try {
+        const ctx = new AudioContext();
+        await ctx.resume();
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const s = ctx.createBufferSource();
+        s.buffer = buf; s.connect(ctx.destination); s.start();
+        ctx.close();
+      } catch(e) {}
+      
+      // Unlock audio element
+      try {
+        if (audioRef.current) {
+          audioRef.current.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAABhkVFqMkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAABhkVFqMkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAABhkVFqMkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+          await audioRef.current.play().catch(() => {});
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      } catch(e) {}
+
+      // Init ResponsiveVoice
+      try {
+        const rv = (window as any).responsiveVoice;
+        if (rv) rv.speak(' ', 'Arabic Male', { volume: 0 });
+      } catch(e) {}
+
+      // Init browser TTS
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(' ');
+          u.volume = 0;
+          window.speechSynthesis.speak(u);
+        }
+      } catch(e) {}
+
+      soundEnabledRef.current = true;
+      setSoundEnabled(true);
+      setTtsStatus('✅ الصوت مفعّل - جاهز');
+    } else {
+      soundEnabledRef.current = false;
+      setSoundEnabled(false);
+      setTtsStatus('🔇 الصوت مطفي');
     }
   };
 
   const testAudio = async () => {
-      if (!audioUnlocked) await unlockAudio();
-      if (!soundEnabled) setSoundEnabled(true);
-      // Force soundEnabledRef immediately for test
-      soundEnabledRef.current = true;
-      speak("المريض أحمد محمد، يرجى التوجه إلى العيادة", "ar-SA");
+    if (!soundEnabled) {
+      await enableSound();
+      // Small delay to let unlock settle
+      await new Promise(r => setTimeout(r, 500));
+    }
+    soundEnabledRef.current = true;
+    speak("المريض أحمد محمد، يرجى التوجه إلى العيادة الأولى", true);
   };
 
   // Load clinic names once (separate from subscription to avoid infinite loop)
@@ -268,7 +306,7 @@ const QueueDisplayView: React.FC = () => {
                const text = isArabicName 
                  ? `الرجاء من المريض ${p.name}, التوجه إلى ${clinicName}`
                  : `Patient ${p.name}, please proceed to ${clinicName}`;
-               speak(text, isArabicName ? 'ar-SA' : 'en-US');
+               speak(text, isArabicName);
            }
        });
 
@@ -307,19 +345,23 @@ const QueueDisplayView: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
+            {/* TTS Status */}
+            <div className={`px-4 py-2 rounded-full text-xs font-mono ${soundEnabled ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}`}>
+              {ttsStatus}
+            </div>
             <button 
                 onClick={testAudio}
                 className="px-6 py-2.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-3 bg-blue-500/10 text-blue-400 border border-blue-500/50 hover:bg-blue-500/20"
             >
                 <i className="fa-solid fa-play"></i>
-                Test Audio
+                تجربة الصوت
             </button>
             <button 
-                onClick={toggleSound}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-3 ${soundEnabled ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(8,145,178,0.3)]' : 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'}`}
+                onClick={enableSound}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-3 ${soundEnabled ? 'bg-green-500/20 text-green-400 border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 animate-pulse'}`}
             >
-                <i className={`fa-solid ${soundEnabled ? 'fa-volume-high animate-pulse' : 'fa-volume-xmark'}`}></i>
-                {soundEnabled ? '🔊 Audio ON' : '🔇 اضغط لتفعيل الصوت'}
+                <i className={`fa-solid ${soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark'}`}></i>
+                {soundEnabled ? '🔊 الصوت مفعّل' : '🔇 اضغط لتفعيل الصوت'}
             </button>
         </div>
 
