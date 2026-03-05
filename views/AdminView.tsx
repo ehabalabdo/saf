@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { ClinicService, AuthService, BillingService } from '../services/services';
+import { ClinicService, AuthService, BillingService, SettingsService } from '../services/services';
 import { pgUsers, pgClientsService } from '../services/apiServices';
 import { api } from '../src/api';
 import { Clinic, User, UserRole, Invoice, SystemSettings, ClinicCategory, ClientFeatures } from '../types';
