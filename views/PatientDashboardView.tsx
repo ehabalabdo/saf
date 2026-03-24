@@ -457,15 +457,15 @@ const PatientDashboardView: React.FC = () => {
                 التنبيهات الطبية
               </h3>
             </div>
-            {patient.medicalProfile.allergies.exists || patient.medicalProfile.chronicConditions.exists ? (
+            {patient.medicalProfile?.allergies?.exists || patient.medicalProfile?.chronicConditions?.exists ? (
               <div className="space-y-3">
-                {patient.medicalProfile.allergies.exists && (
+                {patient.medicalProfile?.allergies?.exists && (
                   <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
                     <div className="text-xs font-bold text-red-800 uppercase mb-1">حساسية</div>
                     <div className="text-sm text-red-700">{patient.medicalProfile.allergies.details}</div>
                   </div>
                 )}
-                {patient.medicalProfile.chronicConditions.exists && (
+                {patient.medicalProfile?.chronicConditions?.exists && (
                   <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg">
                     <div className="text-xs font-bold text-orange-800 uppercase mb-1">أمراض مزمنة</div>
                     <div className="text-sm text-orange-700">{patient.medicalProfile.chronicConditions.details}</div>
