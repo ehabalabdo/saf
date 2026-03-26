@@ -38,7 +38,6 @@ export class ErrorBoundary extends Component<Props, State> {
   handleFullReset = () => {
     const slug = localStorage.getItem('currentClientSlug');
     localStorage.removeItem('user');
-    localStorage.removeItem('patientUser');
     localStorage.removeItem('superAdmin');
     localStorage.removeItem('currentClientId');
     localStorage.removeItem('token');

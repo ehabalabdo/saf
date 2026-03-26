@@ -33,7 +33,6 @@ const LoginView: React.FC = () => {
         localStorage.setItem('token', result.token);
         localStorage.setItem('hrEmployee', JSON.stringify(result.employee));
         localStorage.removeItem('user');
-        localStorage.removeItem('patientUser');
         navigate(slug ? `/${slug}/hr/me` : '/hr/me', { replace: true });
         return;
       }
@@ -41,27 +40,21 @@ const LoginView: React.FC = () => {
       await login(identifier, password);
       // Login successful - redirect based on user type
       // localStorage is already set synchronously by login() before it returns
-      const savedPatient = localStorage.getItem('patientUser');
-      
-      if (savedPatient) {
-        navigate(slug ? `/${slug}/patient/dashboard` : '/patient/dashboard', { replace: true });
-      } else {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-          try {
-            const parsed = JSON.parse(savedUser);
-            const role = parsed.role;
-            const prefix = slug ? `/${slug}` : '';
-            if (role === 'admin') navigate(`${prefix}/admin`, { replace: true });
-            else if (role === 'secretary') navigate(`${prefix}/reception`, { replace: true });
-            else if (role === 'doctor') navigate(`${prefix}/doctor`, { replace: true });
-            else if (role === 'lab_tech') navigate(`${prefix}/dental-lab`, { replace: true });
-            else if (role === 'implant_manager') navigate(`${prefix}/implant-company`, { replace: true });
-            else if (role === 'course_manager') navigate(`${prefix}/academy`, { replace: true });
-            else navigate(`${prefix}/`, { replace: true });
-          } catch {
-            navigate(slug ? `/${slug}/` : '/', { replace: true });
-          }
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          const role = parsed.role;
+          const prefix = slug ? `/${slug}` : '';
+          if (role === 'admin') navigate(`${prefix}/admin`, { replace: true });
+          else if (role === 'secretary') navigate(`${prefix}/reception`, { replace: true });
+          else if (role === 'doctor') navigate(`${prefix}/doctor`, { replace: true });
+          else if (role === 'lab_tech') navigate(`${prefix}/dental-lab`, { replace: true });
+          else if (role === 'implant_manager') navigate(`${prefix}/implant-company`, { replace: true });
+          else if (role === 'course_manager') navigate(`${prefix}/academy`, { replace: true });
+          else navigate(`${prefix}/`, { replace: true });
+        } catch {
+          navigate(slug ? `/${slug}/` : '/', { replace: true });
         }
       }
     } catch (err: any) {

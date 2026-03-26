@@ -29,7 +29,6 @@ const HrLoginView: React.FC = () => {
       localStorage.setItem('hrEmployee', JSON.stringify(result.employee));
       // Clear any existing staff session
       localStorage.removeItem('user');
-      localStorage.removeItem('patientUser');
       navigate(`/${slug}/hr/me`, { replace: true });
     } catch (err: any) {
       setError(err.message || (isAr ? 'فشل تسجيل الدخول' : 'Login failed'));

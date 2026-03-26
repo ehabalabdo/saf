@@ -15,15 +15,15 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const { user, logout } = useAuth();
   const clientCtx = useClientSafe();
-  const features = clientCtx?.client?.enabledFeatures || { dental_lab: false, implant_company: false, academy: false, device_results: false };
+  const features = clientCtx?.client?.enabledFeatures || { dental_lab: false, implant_company: false, academy: false };
   const { language, toggleLanguage, t } = useLanguage();
   const { isDarkMode, toggleTheme } = useTheme();
   const location = useLocation();
 
   // Detect slug from URL to prefix nav links
   const knownTopRoutes = ['login', 'admin', 'reception', 'doctor', 'patients', 'appointments',
-    'dental-lab', 'implant-company', 'academy', 'clinic-history', 'device-results', 'device-management',
-    'queue-display', 'patient', 'super-admin'];
+    'dental-lab', 'implant-company', 'academy', 'clinic-history',
+    'queue-display', 'super-admin'];
   const pathParts = location.pathname.split('/').filter(Boolean);
   const slug = pathParts[0] && !knownTopRoutes.includes(pathParts[0]) ? pathParts[0] : null;
   const prefix = slug ? `/${slug}` : '';
@@ -82,9 +82,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const showImplantView = role === UserRole.ADMIN || role === UserRole.IMPLANT_MANAGER || (features.implant_company && role === UserRole.DOCTOR);
   const showAcademyView = role === UserRole.ADMIN || role === UserRole.COURSE_MANAGER || (features.academy && (role === UserRole.SECRETARY || role === UserRole.DOCTOR));
 
-  // Device results visibility — Admin always sees + management, others only if enabled
-  const showDeviceResults = role === UserRole.ADMIN || (features.device_results && (role === UserRole.SECRETARY || role === UserRole.DOCTOR));
-
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
       {/* Sidebar - Desktop Only */}
@@ -114,8 +111,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
                {role === UserRole.DOCTOR && <NavItem to="/doctor" icon="fa-solid fa-user-doctor" label={t('doctor_console')} />}
                <NavItem to="/appointments" icon="fa-regular fa-calendar-check" label={t('appointments_nav')} />
                <NavItem to="/patients" icon="fa-solid fa-users-viewfinder" label={t('patients_registry')} />
-               {showDeviceResults && <NavItem to="/device-results" icon="fa-solid fa-microscope" label={t('device_results_nav')} />}
-               {role === UserRole.ADMIN && <NavItem to="/device-management" icon="fa-solid fa-microchip" label={t('device_mgmt_nav')} />}
                {(role === UserRole.ADMIN || role === UserRole.DOCTOR) && <NavItem to="/clinic-history" icon="fa-solid fa-chart-line" label={t('clinic_history_nav')} />}
              </>
            )}

@@ -64,7 +64,6 @@ const AppointmentsView: React.FC = () => {
       newMeds: false, newMedsDetail: '',
       newSurgeries: false, newSurgeriesDetail: '',
       newPregnant: false,
-      sendWhatsApp: true
   });
 
     const fetchData = async () => {
@@ -115,7 +114,6 @@ const AppointmentsView: React.FC = () => {
           newMeds: false, newMedsDetail: '',
           newSurgeries: false, newSurgeriesDetail: '',
           newPregnant: false,
-          sendWhatsApp: true
       });
       setPatientMode('existing');
       setPatientSearch('');
@@ -140,41 +138,11 @@ const AppointmentsView: React.FC = () => {
           newMeds: false, newMedsDetail: '',
           newSurgeries: false, newSurgeriesDetail: '',
           newPregnant: false,
-          sendWhatsApp: true
       });
       setPatientMode('existing');
       setIsEditing(true);
       setEditingId(app.id);
       setIsModalOpen(true);
-  };
-
-  const sendWhatsAppCredentials = (phone: string, name: string, password: string) => {
-      let cleanPhone = phone.replace(/[^0-9+]/g, '');
-      cleanPhone = cleanPhone.replace(/^\+/, '');
-      if (cleanPhone.startsWith('07')) cleanPhone = '962' + cleanPhone.substring(1);
-      if (cleanPhone.startsWith('06')) cleanPhone = '962' + cleanPhone.substring(1);
-      
-      const clientSlug = client?.slug || localStorage.getItem('currentClientSlug') || '';
-      const loginUrl = clientSlug ? `https://med.loopjo.com/${clientSlug}` : 'https://med.loopjo.com';
-      const clinicName = client?.name || 'العيادة';
-      
-      const message = [
-        `مرحبا ${name}`,
-        '',
-        `تم تسجيلك في نظام ${clinicName}`,
-        '',
-        'بيانات الدخول:',
-        `اسم المستخدم: ${phone}`,
-        `كلمة المرور: ${password}`,
-        '',
-        'رابط الدخول:',
-        loginUrl,
-        '',
-        'احتفظ بهذه المعلومات بشكل آمن'
-      ].join('\n');
-      
-      const encodedMessage = encodeURIComponent(message);
-      window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`, '_blank');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -250,11 +218,6 @@ const AppointmentsView: React.FC = () => {
           }
           setIsModalOpen(false);
           fetchData();
-
-          // Send WhatsApp if new patient was created
-          if (patientMode === 'new' && formData.sendWhatsApp && formData.newPhone && generatedPassword) {
-              sendWhatsAppCredentials(formData.newPhone, formData.newName, generatedPassword);
-          }
       } catch (e: any) {
           alert(e.message);
       }
@@ -661,20 +624,6 @@ const AppointmentsView: React.FC = () => {
                                         )}
                                     </div>
 
-                                    {/* WhatsApp Checkbox */}
-                                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3">
-                                       <input 
-                                          type="checkbox" 
-                                          id="sendWhatsAppAppt" 
-                                          checked={formData.sendWhatsApp} 
-                                          onChange={e => setFormData({...formData, sendWhatsApp: e.target.checked})} 
-                                          className="w-5 h-5 text-green-600 rounded-md"
-                                       />
-                                       <label htmlFor="sendWhatsAppAppt" className="flex items-center gap-2 text-sm font-semibold text-green-800 cursor-pointer">
-                                          <i className="fab fa-whatsapp text-2xl"></i>
-                                          <span>{t('send_via_whatsapp')}</span>
-                                       </label>
-                                    </div>
                                 </div>
                             )}
 

@@ -85,7 +85,6 @@ const translations = {
     advertisement: "Advertisement",
     
     register_patient: "Register Patient",
-    send_via_whatsapp: "Send login credentials via WhatsApp",
     todays_queue: "Today's Queue",
     open_queue_screen: "Launch TV Screen",
     time_col: "Time",
@@ -172,8 +171,6 @@ const translations = {
     menu_label: "Menu",
     departments_label: "Departments",
     hr_label: "HR",
-    device_results_nav: "Device Results",
-    device_mgmt_nav: "Device Management",
     dental_lab_nav: "Dental Lab",
     implant_co_nav: "Implant Co.",
     beauty_academy_nav: "Beauty Academy",
@@ -266,7 +263,6 @@ const translations = {
     advertisement: "إعلان",
 
     register_patient: "تسجيل المريض",
-    send_via_whatsapp: "إرسال بيانات الدخول عبر واتساب للمريض",
     todays_queue: "قائمة الانتظار",
     open_queue_screen: "فتح شاشة الانتظار",
     time_col: "الوقت",
@@ -353,8 +349,6 @@ const translations = {
     menu_label: "القائمة",
     departments_label: "الأقسام",
     hr_label: "الموارد البشرية",
-    device_results_nav: "نتائج الأجهزة",
-    device_mgmt_nav: "إدارة الأجهزة",
     dental_lab_nav: "مختبر الأسنان",
     implant_co_nav: "شركة الزراعات",
     beauty_academy_nav: "أكاديمية التجميل",

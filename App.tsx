@@ -17,12 +17,7 @@ import AppointmentsView from './views/AppointmentsView';
 import DentalLabView from './views/DentalLabView';
 import ImplantView from './views/ImplantView';
 import CoursesView from './views/CoursesView';
-import PatientLoginView from './views/PatientLoginView';
-import PatientDashboardView from './views/PatientDashboardView';
 import ClinicHistoryView from './views/ClinicHistoryView';
-import DeviceResultsView from './views/DeviceResultsView';
-import DeviceManagementView from './views/DeviceManagementView';
-import SuperAdminView from './views/SuperAdminView';
 import LandingView from './views/LandingView';
 import HrEmployeesView from './views/HrEmployeesView';
 import HrAttendanceView from './views/HrAttendanceView';
@@ -102,7 +97,7 @@ const ExpiredBlockScreen: React.FC = () => {
           <p className="text-slate-400 text-xs mb-1">للتواصل مع الإدارة</p>
           <p className="text-white font-bold text-lg">0790904030</p>
         </div>
-        <button onClick={() => { const s = localStorage.getItem('currentClientSlug'); localStorage.removeItem('token'); localStorage.removeItem('user'); localStorage.removeItem('patientUser'); window.location.href = s ? `/${s}/login` : '/login'; }}
+        <button onClick={() => { const s = localStorage.getItem('currentClientSlug'); localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = s ? `/${s}/login` : '/login'; }}
           className="text-slate-500 hover:text-white text-sm transition">
           <i className="fa-solid fa-arrow-right-from-bracket ml-1"></i> تسجيل خروج
         </button>
@@ -116,8 +111,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   // Detect slug from current URL for proper redirect
   const pathParts = window.location.pathname.split('/').filter(Boolean);
   const knownTopRoutes = ['login', 'admin', 'reception', 'doctor', 'patients', 'appointments', 
-    'dental-lab', 'implant-company', 'academy', 'clinic-history', 'device-results', 'device-management', 
-    'queue-display', 'patient', 'super-admin', 'hr'];
+    'dental-lab', 'implant-company', 'academy', 'clinic-history', 
+    'queue-display', 'hr'];
   const currentSlug = pathParts[0] && !knownTopRoutes.includes(pathParts[0]) ? pathParts[0] : null;
   const loginPath = currentSlug ? `/${currentSlug}/login` : '/login';
 
@@ -202,25 +197,12 @@ const SlugRedirectWithId: React.FC<{ basePath: string }> = ({ basePath }) => {
 
 // --- App Router ---
 const AppRoutes: React.FC = () => {
-  const { user, patientUser } = useAuth();
+  const { user } = useAuth();
 
   return (
     <Routes>
-      {/* Super Admin - YOUR control panel */}
-      <Route path="/super-admin" element={<SuperAdminView />} />
-
       {/* Staff Login — redirect to slug login if slug saved */}
       <Route path="/login" element={user ? <RedirectHandler to={getHomeRoute(user)} /> : <SlugRedirect path="/login" />} />
-
-      {/* Patient Portal Routes */}
-      <Route 
-        path="/patient/login" 
-        element={patientUser ? <RedirectHandler to="/patient/dashboard" /> : <PatientLoginView />} 
-      />
-      <Route 
-        path="/patient/dashboard" 
-        element={patientUser ? <PatientDashboardView /> : <RedirectHandler to="/patient/login" />} 
-      />
 
       {/* Legacy bare routes → redirect to slug versions */}
       <Route path="/admin" element={<SlugRedirect path="/admin" />} />
@@ -233,8 +215,6 @@ const AppRoutes: React.FC = () => {
       <Route path="/implant-company" element={<SlugRedirect path="/implant-company" />} />
       <Route path="/academy" element={<SlugRedirect path="/academy" />} />
       <Route path="/clinic-history" element={<SlugRedirect path="/clinic-history" />} />
-      <Route path="/device-results" element={<SlugRedirect path="/device-results" />} />
-      <Route path="/device-management" element={<SlugRedirect path="/device-management" />} />
       <Route path="/queue-display" element={<SlugRedirect path="/queue-display" />} />
 
       {/* Root - Landing Page */}
@@ -254,12 +234,12 @@ const AppRoutes: React.FC = () => {
 // --- Client Slug Routes (/:slug/...) ---
 const ClientSlugRoutes: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user, patientUser } = useAuth();
+  const { user } = useAuth();
 
   // Don't treat known routes as slugs
   const knownRoutes = ['login', 'admin', 'reception', 'doctor', 'patients', 'appointments', 
-    'dental-lab', 'implant-company', 'academy', 'clinic-history', 'device-results', 'device-management', 'queue-display', 
-    'patient', 'super-admin', 'hr'];
+    'dental-lab', 'implant-company', 'academy', 'clinic-history', 'queue-display', 
+    'hr'];
   if (slug && knownRoutes.includes(slug)) {
     return <RedirectHandler to={`/${slug}`} />;
   }
@@ -280,8 +260,6 @@ const ClientSlugRoutes: React.FC = () => {
           <Route path="/implant-company" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.DOCTOR, UserRole.IMPLANT_MANAGER]}><ImplantView /></ProtectedRoute>} />
           <Route path="/academy" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.COURSE_MANAGER, UserRole.SECRETARY]}><CoursesView /></ProtectedRoute>} />
           <Route path="/clinic-history" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.DOCTOR]}><ClinicHistoryView /></ProtectedRoute>} />
-          <Route path="/device-results" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.SECRETARY, UserRole.DOCTOR]}><DeviceResultsView /></ProtectedRoute>} />
-          <Route path="/device-management" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><DeviceManagementView /></ProtectedRoute>} />
           <Route path="/catalog" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]}><CatalogView /></ProtectedRoute>} />
           <Route path="/queue-display" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.SECRETARY]}><QueueDisplayView /></ProtectedRoute>} />
           
@@ -295,8 +273,6 @@ const ClientSlugRoutes: React.FC = () => {
           {/* HR Employee Portal */}
           <Route path="/hr/me" element={<HrEmployeeGuard><HrEmployeeMeView /></HrEmployeeGuard>} />
           
-          <Route path="/patient/login" element={patientUser ? <RedirectHandler to={`/${slug}/patient/dashboard`} /> : <PatientLoginView />} />
-          <Route path="/patient/dashboard" element={patientUser ? <PatientDashboardView /> : <RedirectHandler to={`/${slug}/patient/login`} />} />
           <Route path="/" element={user ? <RedirectHandler to={`/${slug}/admin`} /> : <RedirectHandler to={`/${slug}/login`} />} />
           <Route path="*" element={<RedirectHandler to={`/${slug}/login`} />} />
         </Routes>
@@ -327,7 +303,7 @@ const ClientGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <i className="fa-solid fa-building-circle-xmark text-5xl text-red-400 mb-4"></i>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">المركز غير موجود</h2>
           <p className="text-slate-500 mb-4">{error || 'تأكد من صحة الرابط'}</p>
-          <a href="/super-admin" className="text-primary hover:underline text-sm">الذهاب للوحة التحكم</a>
+          <a href="/login" className="text-primary hover:underline text-sm">العودة لتسجيل الدخول</a>
         </div>
       </div>
     );

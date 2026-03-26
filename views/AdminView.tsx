@@ -472,10 +472,9 @@ const AdminView: React.FC<AdminViewProps> = ({ user: propUser }) => {
               {[
                 { key: 'dental_lab' as keyof ClientFeatures, label: 'مختبر الأسنان', icon: 'fa-solid fa-tooth', desc: 'إدارة طلبات مختبر الأسنان' },
                 { key: 'implant_company' as keyof ClientFeatures, label: 'شركة الزراعات', icon: 'fa-solid fa-box-open', desc: 'إدارة طلبات الزراعات' },
-                { key: 'academy' as keyof ClientFeatures, label: 'الأكاديمية', icon: 'fa-solid fa-graduation-cap', desc: 'إدارة الدورات والتدريب' },
-                { key: 'device_results' as keyof ClientFeatures, label: 'نتائج الأجهزة', icon: 'fa-solid fa-microscope', desc: 'عرض نتائج الأجهزة الطبية للموظفين والمرضى' }
+                { key: 'academy' as keyof ClientFeatures, label: 'الأكاديمية', icon: 'fa-solid fa-graduation-cap', desc: 'إدارة الدورات والتدريب' }
               ].map(feature => {
-                const features = client?.enabledFeatures || { dental_lab: false, implant_company: false, academy: false, device_results: false };
+                const features = client?.enabledFeatures || { dental_lab: false, implant_company: false, academy: false };
                 const isOn = features[feature.key];
                 return (
                   <div key={feature.key} className="flex items-center justify-between py-4 border-b border-slate-100 last:border-0">

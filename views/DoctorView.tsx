@@ -7,11 +7,10 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Patient, VisitData, Appointment, Gender, Priority, PrescriptionItem, Attachment, InvoiceItem, VitalSigns, LabOrder, ImagingOrder, CatalogService, CatalogMedication } from '../types';
 import { pgCatalogServices, pgCatalogMedications } from '../services/apiServices';
-import DeviceResultsTimeline from '../components/DeviceResultsTimeline';
 import { fmtDate } from '../utils/formatters';
 
 // ===================== SOAP TAB TYPES =====================
-type SoapTab = 'chief' | 'history' | 'exam' | 'assessment' | 'plan' | 'billing' | 'devices';
+type SoapTab = 'chief' | 'history' | 'exam' | 'assessment' | 'plan' | 'billing';
 
 const DoctorView: React.FC = () => {
   const { user } = useAuth();
@@ -526,7 +525,6 @@ const DoctorView: React.FC = () => {
     { key: 'assessment', label: 'Assessment', icon: 'fa-diagnoses', color: 'bg-purple-600' },
     { key: 'plan', label: 'Plan & Orders', icon: 'fa-clipboard-list', color: 'bg-blue-600' },
     { key: 'billing', label: 'Billing', icon: 'fa-file-invoice-dollar', color: 'bg-emerald-600' },
-    { key: 'devices', label: 'Devices', icon: 'fa-microchip', color: 'bg-violet-600' },
   ];
 
   return (
@@ -1122,18 +1120,6 @@ const DoctorView: React.FC = () => {
                               </div>
                             </div>
                           ) : <div className="text-xs text-slate-400 italic text-center py-2">No services added.</div>}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* ============ TAB 7: DEVICES ============ */}
-                    {activeTab === 'devices' && (
-                      <div className="space-y-5 animate-fadeIn">
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                          <i className="fa-solid fa-microchip text-violet-500"></i> نتائج الأجهزة (Device Results)
-                        </h3>
-                        <div className="bg-violet-50/30 rounded-xl border border-violet-100 p-4">
-                            <DeviceResultsTimeline patientId={selectedPatient.id} />
                         </div>
                       </div>
                     )}

@@ -43,7 +43,6 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
     surgeriesExists: false, surgeriesDetail: '', // NEW: Previous surgeries
     isPregnant: false,
     clinicId: '', priority: 'normal' as Priority, source: 'walk-in', reasonForVisit: '',
-    sendWhatsApp: true // NEW: Send credentials via WhatsApp by default
   });
 
   const loadData = async () => {
@@ -160,51 +159,6 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
         };
     }, [user]);
 
-    // WhatsApp Integration - Send login credentials via WhatsApp
-    const sendWhatsAppCredentials = (phone: string, name: string, password: string) => {
-        // Clean phone number (remove spaces, dashes, etc.)
-        let cleanPhone = phone.replace(/[^0-9+]/g, '');
-        
-        // Convert local Jordan numbers to international format
-        // Remove leading + if present
-        cleanPhone = cleanPhone.replace(/^\+/, '');
-        // Convert 07x to 9627x (Jordan mobile)
-        if (cleanPhone.startsWith('07')) {
-            cleanPhone = '962' + cleanPhone.substring(1);
-        }
-        // Convert 06x to 9626x (Jordan landline)  
-        if (cleanPhone.startsWith('06')) {
-            cleanPhone = '962' + cleanPhone.substring(1);
-        }
-        
-        // Build client-specific login URL
-        const clientSlug = client?.slug || localStorage.getItem('currentClientSlug') || '';
-        const loginUrl = clientSlug ? `https://med.loopjo.com/${clientSlug}` : 'https://med.loopjo.com';
-        const clinicName = client?.name || 'العيادة';
-        
-        // Prepare message in Arabic
-        const message = [
-          `مرحبا ${name}`,
-          '',
-          `تم تسجيلك في نظام ${clinicName}`,
-          '',
-          'بيانات الدخول:',
-          `اسم المستخدم: ${phone}`,
-          `كلمة المرور: ${password}`,
-          '',
-          'رابط الدخول:',
-          loginUrl,
-          '',
-          'احتفظ بهذه المعلومات بشكل آمن'
-        ].join('\n');
-        
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
-        
-        // Open WhatsApp in new tab
-        window.open(whatsappUrl, '_blank');
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name || !formData.clinicId || !formData.phone || !user) return;
@@ -252,12 +206,7 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
             setIsFormOpen(false);
             // No need to manually fetch - PatientService.subscribe will auto-update
             
-            // Send via WhatsApp if enabled
-            if (formData.sendWhatsApp && patientPhone) {
-                sendWhatsAppCredentials(patientPhone, patientName, patientPassword);
-            } else {
-                alert('✅ تمت إضافة المريض بنجاح!');
-            }
+            alert('✅ تمت إضافة المريض بنجاح!');
         } catch (e: any) {
             alert("Error: " + (e.message || 'فشل إضافة المريض'));
         }
@@ -687,21 +636,6 @@ const ReceptionView: React.FC<ReceptionViewProps> = ({ user: propUser }) => {
                                     {(formData as any)[`${key}Exists`] && <input type="text" placeholder="..." className="w-full bg-white border border-rose-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-rose-200" value={(formData as any)[`${key}Detail`]} onChange={e => setFormData({...formData, [`${key}Detail`]: e.target.value})} />}
                                  </div>
                              ))}
-                          </div>
-                          
-                          {/* WhatsApp Checkbox */}
-                          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-                             <input 
-                                type="checkbox" 
-                                id="sendWhatsApp" 
-                                checked={formData.sendWhatsApp} 
-                                onChange={e => setFormData({...formData, sendWhatsApp: e.target.checked})} 
-                                className="w-5 h-5 text-green-600 rounded-md"
-                             />
-                             <label htmlFor="sendWhatsApp" className="flex items-center gap-2 text-sm font-semibold text-green-800 cursor-pointer">
-                                <i className="fab fa-whatsapp text-2xl"></i>
-                                <span>{t('send_via_whatsapp')}</span>
-                             </label>
                           </div>
                           
                           <button type="submit" className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl transition-all hover:bg-primary transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 text-lg"><i className="fa-solid fa-check-circle"></i> {t('register_patient')}</button>
