@@ -36,6 +36,7 @@ const SafeRouter: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    console.log('[MEDLOOP] SafeRouter useEffect running');
     try {
       if (!window.location) throw new Error("No location");
       if (window.location.protocol === 'blob:' || window.location.origin === 'null') {
@@ -50,6 +51,7 @@ const SafeRouter: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, []);
 
+  console.log('[MEDLOOP] SafeRouter render, checked:', checked, 'useMemory:', useMemory);
   if (!checked) return null;
 
   return useMemory ? (
@@ -313,6 +315,7 @@ const ClientGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const App: React.FC = () => {
+  console.log('[MEDLOOP] App rendering');
   return (
     <ErrorBoundary>
       <LanguageProvider>
